@@ -21,9 +21,9 @@ def display():
 #Write a function that plots the number of words having a given number of tags. 
 #The X-axis should show the number of tags and 
 #the Y-axis the number of words having exactly this number of tags.
-def displayPlot1():
-    tagWords = brown.tagged_words(categories='news')
-    fd1 = nltk.FreqDist(tagWords)
+#corpus can be the tagged_words according to what is most convenient
+def PlotNumberOfTags(corpus):
+    fd1 = nltk.FreqDist(corpus)
     difCouples = fd1.keys()
     words = [w for (w,t) in difCouples]
     fd2 = nltk.FreqDist(words)
@@ -31,7 +31,7 @@ def displayPlot1():
     
     tags_n = pylab.arange(15)
     perfs = [cfd[n].__len__() for n in tags_n]
-    pylab.plot(n, perfs, '-bo')
+    pylab.plot(tags_n, perfs, '-bo')
     pylab.title('The number of words having a given number of tags')
     pylab.xlabel('Number of tags')
     pylab.ylabel('Number of words')
@@ -46,32 +46,43 @@ def displayPlot1():
 #    cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
 #    return cfd
          
-def countWordsWithNTags(n):
-    tagWords = brown.tagged_words(categories='news')
-    fd1 = nltk.FreqDist(tagWords)
-    difCouples = fd1.keys()
-    words = [w for (w,t) in difCouples]
-    fd2 = nltk.FreqDist(words)
-    cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
-    return cfd[n].__len__()  
+#def countWordsWithNTags(n):
+#    tagWords = brown.tagged_words(categories='news')
+#    fd1 = nltk.FreqDist(tagWords)
+#    difCouples = fd1.keys()
+#    words = [w for (w,t) in difCouples]
+#    fd2 = nltk.FreqDist(words)
+#    cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
+#    return cfd[n].__len__()  
 
 # function that finds words with more than N observed tags
-def countWordsWithMoreNTags(n):
-    difCouples = nltk.FreqDist(brown.tagged_words(categories='news')).keys()
+def MostAmbiguousWords(corpus, n):
+    difCouples = nltk.FreqDist(corpus).keys()
     fd2 = nltk.FreqDist([w for (w,t) in difCouples])
     cfd = nltk.ConditionalFreqDist()
     for word in fd2.keys():
         if  fd2[word] >= n : 
             cond = fd2[word] 
             cfd[cond].inc(word) 
-    return cfd        
-       
+    return cfd      
+
+#test function that verifies that the words indeed have more than N distinct tags in the returned value.
+def TestMostAmbiguousWords(cfd, N):
+    for fd in cfd:
+        print 1
+#finds one example of usage of the word with each of the different tags in which it can occur.
+def ShowExamples(word, cfd, corpus):
+    difCouples = nltk.FreqDist(corpus).keys()
+    for (w,t) in difCouples:
+        if w == word :
+            print "\'%s\'" % w +"as %s:" % t       
+           
 def main():
-    displayPlot1()
-#    displayPlot1(2);
-#    s = countWordsWithNTags(2);
-#    x = countWordsWithNTags(3);
-#    print x
+    tagWords = brown.tagged_words(categories='news')
+    PlotNumberOfTags(tagWords)
+    cfd = MostAmbiguousWords(tagWords, 4)
+    TestMostAmbiguousWords(cfd, 4)
+    ShowExamples('book', cfd, tagWords)
     
 if __name__ == '__main__':
     main() 
