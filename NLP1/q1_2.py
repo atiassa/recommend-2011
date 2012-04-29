@@ -17,7 +17,10 @@ def display():
     pylab.xlabel('Model Size')
     pylab.ylabel('Performance')
     pylab.show()
-
+    
+#Write a function that plots the number of words having a given number of tags. 
+#The X-axis should show the number of tags and 
+#the Y-axis the number of words having exactly this number of tags.
 def displayPlot1():
     import pylab
     sizes = 2 ** pylab.arange(15)
@@ -28,29 +31,41 @@ def displayPlot1():
     pylab.ylabel('Performance')
     pylab.show()
 
-#Write a function that plots the number of words having a given number of tags. 
-#The X-axis should show the number of tags and 
-#the Y-axis the number of words having exactly this number of tags.  
-def countWordsWithDiffTags():
+#def countWordsWithDiffTags():
+#    tagWords = brown.tagged_words(categories='news')
+#    fd1 = nltk.FreqDist(tagWords)
+#    difCouples = fd1.keys()
+#    words = [w for (w,t) in difCouples]
+#    fd2 = nltk.FreqDist(words)
+#    cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
+#    return cfd
+         
+def countWordsWithNTags(n):
     tagWords = brown.tagged_words(categories='news')
     fd1 = nltk.FreqDist(tagWords)
     difCouples = fd1.keys()
     words = [w for (w,t) in difCouples]
     fd2 = nltk.FreqDist(words)
     cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
-    return cfd
-    
-    
-def countWordsWithNTags(n):
-    cfd = countWordsWithDiffTags()
     return cfd[n]  
-    
-    
-    
+
+# function that finds words with more than N observed tags
+def countWordsWithMoreNTags(n):
+    difCouples = nltk.FreqDist(brown.tagged_words(categories='news')).keys()
+    fd2 = nltk.FreqDist([w for (w,t) in difCouples])
+    cfd = nltk.ConditionalFreqDist()
+    for word in fd2.keys():
+        if  fd2[word] >= n : 
+            cond = fd2[word] 
+            cfd[cond].inc(word) 
+    return cfd        
+       
 def main():
-#    display()
+    display()
 #    displayPlot1(2);
-    x = countWordsWithNTags(6);
-    print x
+#    s = countWordsWithNTags(2);
+#    x = countWordsWithNTags(3);
+#    print x
+    
 if __name__ == '__main__':
     main() 
