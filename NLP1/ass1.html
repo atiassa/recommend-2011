@@ -1,0 +1,145 @@
+
+<HTML> 
+<HEAD> 
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<link rel="stylesheet" href="nlp.css" type="text/css" media="all" /> 
+<br>
+<TITLE>NLP12 Assignment 1: Parts of Speech Tagging: Exploring Corpora, Error Analysis</TITLE> 
+</HEAD> 
+ 
+<BODY> 
+ 
+<h1>Assignment 1</h1>
+
+<b>Shimi Malka 066461641</b>
+<br>
+<b>Netali Alima 300724714</b>
+
+<h2>Our Solutions: </h2>
+
+<ol>
+<li><a href="#data">Data Exploration</a>
+   <ol>
+   <li><a href="#crawl">Solutions for - Gathering and cleaning up data</a></li>
+   <li><a href="#explore">Solutions for - Gathering basic statistics</a></li>
+   <li><a href="#correlate">Solutions for - Is there a correlation between word size or frequency and ambiguity level?</a></li>
+   </ol>
+</li>
+<li><a href="#unigram">Solutions for - Unigram and Affix Tagger</a></li>
+<li><a href="#error">Fine-grained Error Analysis</a></li>
+   <ol>
+   <li><a href="#known">Solutions for - Known vs. Unknown Accuracy</a></li>
+   <li><a href="#pertag">Solutions for - Per Tag Precision and Recall</a></li>
+   <li><a href="#confusion">Solutions - for Confusion Matrix</a></li>
+   <li><a href="#size">Solutions for - Sensitivity to the Size and Structure of the Training Set: Cross-Validation</a></li>
+   <li><a href="#stratified">Solutions - for Stratified Samples</a></li>
+   </ol>
+</ol>
+
+<a name="data"></a>
+<h3>Data Exploration</h3>
+<pre>
+[our code]
+</pre>
+
+<a name="crawl"></a>
+<h4>Gathering and Cleaning Up Data</h4>
+<pre>
+[our code]
+</pre>
+
+
+<a name="explore"></a>
+<h4>Gathering Basic Statistics</h4>
+
+<pre>
+[our code]
+</pre>
+
+We expect this distribution to exhibit a "long tail" form.  Do you confirm this hypothesis?<br>
+Answer:
+
+<a name="correlate"></a>
+<h4>Is there a correlation between word size or frequency and ambiguity level?</h4>
+[graph]<br>
+Describe what you observe.  Does the plot support a hypothesis about correlation? 
+<br>
+Answer: 
+
+<a name="unigram">
+<h3>Unigram and Affix Tagger</h3>
+<h4>Unigram Tagger</h4>
+<pre>
+[our code]
+</pre>
+
+<h4>Affix Tagger</h4>
+<pre>
+[our code]
+</pre>
+Observations: 
+<ol>
+<li>does entropy filtering improve accuracy? <br>
+Answer:
+<li>how do you determine the range of values to test for the cutoff?<br>
+Answer:
+<li>is the accuracy value evolving in a predictable manner as the cutoff varies?<br>
+Answer:
+<li>describe the list of suffixes that are good tag predictors -- are you surprised by what you observe?<br>
+Answer:
+</ol>
+
+<a name="error"></a>
+<h3>Fine-Grained Accuracy and Error Analysis</h3>
+
+<a name="known"></a>
+<h4>Known vs. Unknown Accuracy</h4>
+
+<pre>
+[our code]
+</pre>
+
+<a name="pertag"></a>
+<h4>Per Tag Precision and Recall</h4>
+
+<pre>
+[our code]
+</pre>
+Which tags are most difficult in the simplified tagset? In the full tagset?<br>
+Answer: 
+
+<a name="confusion"></a>
+<h4>Confusion Matrix</h4>
+
+<pre>
+[our code]
+</pre>
+<p/>
+Report the confusion matrix for the full tagset and simplified tagset of the Brown corpus for the last tagger
+discussed in class.  Discuss the results: which pairs of tags are the most difficult to distinguish?
+<p/>
+Given your observation on the most likely confusions, propose a simple (engineering) method to improve the results
+of your tagger.  Implement this improvement and report on error reduction.
+
+
+<a name="size"></a>
+<h4>Sensitivity to the Size and Structure of the Training Set: Cross-Validation</h4>
+
+<pre>
+[our code]
+</pre>
+Implement a method crossValidate(corpus, n) for trainable taggers.  Report the 10-fold cross-validation results for 
+the last tagger discussed in class.  Discuss the results.
+
+<a name="stratified"></a>
+<h4>Stratified Samples</h4>
+<pre>
+[our code]
+</pre>
+Discuss the results you observe.
+
+<BR> 
+<HR>
+ <br>
+</BODY> 
+ 

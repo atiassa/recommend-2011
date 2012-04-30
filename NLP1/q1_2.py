@@ -1,22 +1,7 @@
 import  nltk
 from nltk.corpus import brown
 import pylab
-
-def performance(cfd, wordlist):
-    lt = dict((word, cfd[word].max()) for word in wordlist)
-    baseline_tagger = nltk.UnigramTagger(model=lt, backoff=nltk.DefaultTagger('NN'))
-    return baseline_tagger.evaluate(brown.tagged_sents(categories='news'))
-
-def display():
-    words_by_freq = list(nltk.FreqDist(brown.words(categories='news')))
-    cfd = nltk.ConditionalFreqDist(brown.tagged_words(categories='news'))
-    sizes = 2 ** pylab.arange(15)
-    perfs = [performance(cfd, words_by_freq[:size]) for size in sizes]
-    pylab.plot(sizes, perfs, '-bo')
-    pylab.title('Lookup Tagger Performance with Varying Model Size')
-    pylab.xlabel('Model Size')
-    pylab.ylabel('Performance')
-    pylab.show()
+import matplotlib.pyplot as plt
     
 #Write a function that plots the number of words having a given number of tags. 
 #The X-axis should show the number of tags and 
@@ -31,57 +16,79 @@ def PlotNumberOfTags(corpus):
     
     tags_n = pylab.arange(15)
     perfs = [cfd[n].__len__() for n in tags_n]
-    pylab.plot(tags_n, perfs, '-bo')
+    pylab.plot(tags_n, perfs)
     pylab.title('The number of words having a given number of tags')
     pylab.xlabel('Number of tags')
     pylab.ylabel('Number of words')
+    pylab.grid(True)
     pylab.show()
-
-#def countWordsWithDiffTags():
-#    tagWords = brown.tagged_words(categories='news')
-#    fd1 = nltk.FreqDist(tagWords)
-#    difCouples = fd1.keys()
-#    words = [w for (w,t) in difCouples]
-#    fd2 = nltk.FreqDist(words)
-#    cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
-#    return cfd
-         
-#def countWordsWithNTags(n):
-#    tagWords = brown.tagged_words(categories='news')
-#    fd1 = nltk.FreqDist(tagWords)
-#    difCouples = fd1.keys()
-#    words = [w for (w,t) in difCouples]
-#    fd2 = nltk.FreqDist(words)
-#    cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
-#    return cfd[n].__len__()  
 
 # function that finds words with more than N observed tags
 def MostAmbiguousWords(corpus, n):
     difCouples = nltk.FreqDist(corpus).keys()
-    fd2 = nltk.FreqDist([w for (w,t) in difCouples])
+    word_by_num_of_tags = nltk.FreqDist([w for (w,t) in difCouples])
     cfd = nltk.ConditionalFreqDist()
-    for word in fd2.keys():
-        if  fd2[word] >= n : 
-            cond = fd2[word] 
-            cfd[cond].inc(word) 
+    for (w,t) in difCouples:
+        if  word_by_num_of_tags[w] >= n : 
+            cfd[w].inc(t) 
     return cfd      
 
 #test function that verifies that the words indeed have more than N distinct tags in the returned value.
 def TestMostAmbiguousWords(cfd, N):
-    for fd in cfd:
-        print 1
+    word_with_more_then_n = cfd.conditions() 
+    
+    ccfd = nltk.ConditionalFreqDist()
+    tagWords = [(w.lower(),t) for (w,t) in brown.tagged_words(categories='news')]
+    for (x,y) in tagWords:
+        if word_with_more_then_n.count(x)!= 0 :
+            ccfd[x].inc(y)
+    for w in ccfd.conditions():
+        if len(ccfd[w])<N:
+            print "Not all words occur with more than %d tags." %N
+            return
+    print "All words occur with more than %d tags." %N
+        
 #finds one example of usage of the word with each of the different tags in which it can occur.
 def ShowExamples(word, cfd, corpus):
+    tag_sents = brown.tagged_sents(categories='news')
     difCouples = nltk.FreqDist(corpus).keys()
     for (w,t) in difCouples:
         if w == word :
-            print "\'%s\'" % w +"as %s:" % t       
+            for s in tag_sents:
+                if [(a.lower(),b) for (a,b) in s].count((w,t))!= 0:
+                    sent = ' '.join(b for (b,f) in s)
+                    print "\'%s\'" % w +"as %s: " % t + sent 
+                    break 
+
+def Plot3DCorrelation(tagWords):
+    word_length = []
+    word_frequency = []
+    word_ambiguity = []
+    
+    words_by_freq = nltk.FreqDist([w for (w,t) in tagWords])
+    difCouples = nltk.FreqDist(tagWords).keys()
+    word_by_ambiguity = nltk.FreqDist([w for (w,t) in difCouples])
+    
+    for w in words_by_freq.keys():
+        word_frequency.append(words_by_freq[w])
+        word_length.append(len(w)) 
+        word_ambiguity.append(word_by_ambiguity[w]) 
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot(word_length , word_frequency ,word_ambiguity )
+    ax.set_title('Correlation between word size or frequency and ambiguity level')
+    ax.set_xlabel('Word length')
+    ax.set_ylabel('Word frequency')
+    ax.set_zlabel('Word ambiguity')
+    plt.show()
            
 def main():
-    tagWords = brown.tagged_words(categories='news')
-    PlotNumberOfTags(tagWords)
+    tagWords = [(w.lower(),t) for (w,t) in brown.tagged_words(categories='news')]
+#    PlotNumberOfTags(tagWords)
+    Plot3DCorrelation(tagWords)
     cfd = MostAmbiguousWords(tagWords, 4)
-    TestMostAmbiguousWords(cfd, 4)
+#    TestMostAmbiguousWords(cfd, 4)
     ShowExamples('book', cfd, tagWords)
     
 if __name__ == '__main__':
