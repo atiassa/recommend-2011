@@ -12,6 +12,8 @@ def cleanSparse(raw, cutOff):
 
 def google(search,tokenizer):
     search = search.replace(" ","%20")
+    search = search.replace("(","%28")
+    search = search.replace(")","%29")
     url = 'http://www.google.com/search?q='+search
     user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
     headers = {'User-Agent' : user_agent}
@@ -25,7 +27,7 @@ def google(search,tokenizer):
 
     links =re.findall(r"url\?q=(.+)&amp;s",html)
 
-    URLtoHTMLtoTEXT = {}
+#    URLtoHTMLtoTEXT = {}
     return links
 #    for url in links:
 #        try:
