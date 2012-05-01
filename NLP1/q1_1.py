@@ -7,22 +7,37 @@ from nltk.corpus import brown
       
 def main():
     s = q1_1()
-#    sentences = s.getTextFromWeb()
-#    text = ""
-#    for sen in sentences:
-#        text = text + sen + "\n"
-#    clean_file = open('cleanText.txt', 'w')
-#    clean_file.write(text)
-#    clean_file.close()
-#    s.tagTextAndWriteToFile(sentences)
+#####################################################################################################
+#First Part getting about 50 sentences using google search and tagged them with an automatic tagger #
+#write the text without the tags to cleanText.txt file and the tagged text to tagText file          #
+#####################################################################################################
+    sentences = s.getTextFromWeb()
+    text = ""
+    for sen in sentences:
+        text = text + sen + "\n"
+    clean_file = open('cleanText.txt', 'w')
+    clean_file.write(text)
+    clean_file.close()
+    s.tagTextAndWriteToFile(sentences)
 
-    dif = s.Compare_files()
-    s.write_differences(dif)
+#########################################################
+# Second Part after inserting tagged files to the Corpus#
+#########################################################
+    #ca45 => first human tagged file
+    #ca46 => second human tagged file
+    #ca47 => automatic tagger tagged file
+#    dif1 = s.Compare_files('ca45', 'ca46') #compare 2 human taggs
+#    dif2 = s.Compare_files('ca45', 'ca47') #compare first human taggs to auto tagger
+#    dif3 = s.Compare_files('ca46', 'ca47') #compare second human taggs to auto tagger
+#    s.write_differences_to_dif_file(dif1, 'Dif2Human.txt')
+#    s.write_differences_to_dif_file(dif2, 'DifFirstHumanToAuto.txt')
+#    s.write_differences_to_dif_file(dif3, 'DifSecondtHumanToAuto.txt')
     
     print "end"
            
 class q1_1(object):
     
+    # getting Bigram->Unigram->affix->regexp->DefaultNN tagger
     def getTagger(self):
         brown_news_tagged = brown.tagged_sents(categories='news')
         nn_tagger = nltk.DefaultTagger('NN')
@@ -41,10 +56,10 @@ class q1_1(object):
         ct2 = nltk.NgramTagger(2, brown_news_tagged, backoff=ut3)
         return ct2
     
+    #split the whole text to sentences using . or ? or ! delimeters
     def segment_sentences(self,words):
         start = 0
         sents = []
-        words = words.lower()
         for i, word in enumerate(words):
             if word in '.?!': #and classifier.classify(punct_features(words, i)) == True:
                 sents.append(words[start:i+1])
@@ -53,9 +68,11 @@ class q1_1(object):
             sents.append(words[start:])
         return sents
     
+    #getting text from web using google search 
+    #(google.py -> we edited this file we got from our course web to adjust to our code)
     def getTextFromWeb(self):
         num_results = 10
-        search_list = ["Netali", "bbc"]
+        search_list = ["bbc"]
         sites = [] 
         text = []
         results = []
@@ -82,6 +99,7 @@ class q1_1(object):
                         text = text + self.segment_sentences(paragraph['text'].encode('utf8'))
         return text
 
+    #tagging the text we got from the web using the tagger we defined above and write it to tagText file
     def tagTextAndWriteToFile(self,sentences):
         tag_file = open('tagText', 'w')
         tagger = self.getTagger()
@@ -93,10 +111,12 @@ class q1_1(object):
         tag_file.close()
     
 
-    def Compare_files(self):
+    #comparing 2 files in the brown corpus and returning a list with all the words that are different
+    #we assume we are talking on the same file and the only thing that can be different is the tag for each word
+    def Compare_files(self, firstName, secondName):
         differences = []
-        file1Sentences = brown.tagged_sents(fileids=['ca45']) #first human tagged file
-        file2Sentences = brown.tagged_sents(fileids=['ca46']) #second human tagged file
+        file1Sentences = brown.tagged_sents(fileids=[firstName])
+        file2Sentences = brown.tagged_sents(fileids=[secondName])
         i = 0
         while len(file1Sentences) != i:
             sen1 = file1Sentences[i]
@@ -111,8 +131,9 @@ class q1_1(object):
                     differences.append(w1)
         return differences
     
-    def write_differences(self, dif):
-        dif_file = open('DifFile.txt', 'w')
+    #getting a list of words and file name and write the content of the list to the file
+    def write_differences_to_dif_file(self, dif, difFileName):
+        dif_file = open(difFileName, 'w')
         for w in dif:
             dif_file.write(w + "\n")
         dif_file.close()
