@@ -2,6 +2,7 @@ import  nltk
 from nltk.corpus import brown
 import pylab
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
     
 #Write a function that plots the number of words having a given number of tags. 
 #The X-axis should show the number of tags and 
@@ -51,14 +52,14 @@ def TestMostAmbiguousWords(cfd, N):
 #finds one example of usage of the word with each of the different tags in which it can occur.
 def ShowExamples(word, cfd, corpus):
     tag_sents = brown.tagged_sents(categories='news')
-    difCouples = nltk.FreqDist(corpus).keys()
-    for (w,t) in difCouples:
+    for w in cfd.conditions():
         if w == word :
-            for s in tag_sents:
-                if [(a.lower(),b) for (a,b) in s].count((w,t))!= 0:
-                    sent = ' '.join(b for (b,f) in s)
-                    print "\'%s\'" % w +"as %s: " % t + sent 
-                    break 
+            for t in cfd[w]:
+                for s in tag_sents:
+                    if [(a.lower(),b) for (a,b) in s].count((w,t))!= 0:
+                        sent = ' '.join(b for (b,f) in s)
+                        print "\'%s\'" % w +"as %s: " % t + sent 
+                        break 
 
 def Plot3DCorrelation(tagWords):
     word_length = []
@@ -68,7 +69,6 @@ def Plot3DCorrelation(tagWords):
     words_by_freq = nltk.FreqDist([w for (w,t) in tagWords])
     difCouples = nltk.FreqDist(tagWords).keys()
     word_by_ambiguity = nltk.FreqDist([w for (w,t) in difCouples])
-    
     for w in words_by_freq.keys():
         word_frequency.append(words_by_freq[w])
         word_length.append(len(w)) 
@@ -76,20 +76,20 @@ def Plot3DCorrelation(tagWords):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.plot(word_length , word_frequency ,word_ambiguity )
+    ax.plot( word_frequency ,word_ambiguity ,word_length)
     ax.set_title('Correlation between word size or frequency and ambiguity level')
-    ax.set_xlabel('Word length')
-    ax.set_ylabel('Word frequency')
-    ax.set_zlabel('Word ambiguity')
+    ax.set_xlabel('Word frequency')
+    ax.set_ylabel('Word ambiguity')
+    ax.set_zlabel('Word length')
     plt.show()
            
 def main():
     tagWords = [(w.lower(),t) for (w,t) in brown.tagged_words(categories='news')]
-#    PlotNumberOfTags(tagWords)
+    PlotNumberOfTags(tagWords)
     Plot3DCorrelation(tagWords)
-    cfd = MostAmbiguousWords(tagWords, 4)
-#    TestMostAmbiguousWords(cfd, 4)
-    ShowExamples('book', cfd, tagWords)
+    cfd = MostAmbiguousWords(tagWords, 1)
+    TestMostAmbiguousWords(cfd, 4)
+    ShowExamples('the', cfd, tagWords)
     
 if __name__ == '__main__':
     main() 
