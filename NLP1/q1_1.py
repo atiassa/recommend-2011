@@ -11,14 +11,14 @@ def main():
 #First Part getting about 50 sentences using google search and tagged them with an automatic tagger #
 #write the text without the tags to cleanText.txt file and the tagged text to tagText file          #
 #####################################################################################################
-#    sentences = s.getTextFromWeb()
-#    text = ""
-#    for sen in sentences:
-#        text = text + sen + "\n"
-#    clean_file = open('cleanText.txt', 'w')
-#    clean_file.write(text)
-#    clean_file.close()
-#    s.tagTextAndWriteToFile(sentences)
+    sentences = s.getTextFromWeb()
+    text = ""
+    for sen in sentences:
+        text = text + sen + "\n"
+    clean_file = open('cleanText.txt', 'w')
+    clean_file.write(text)
+    clean_file.close()
+    s.tagTextAndWriteToFile(sentences)
 
 #########################################################
 # Second Part after inserting tagged files to the Corpus#
@@ -72,7 +72,7 @@ class q1_1(object):
     #(google.py -> we edited this file we got from our course web to adjust to our code)
     def getTextFromWeb(self):
         num_results = 10
-        search_list = ["bbc"]
+        search_list = ["bbc", "Little Red Riding Hood"]
         sites = [] 
         text = []
         results = []
@@ -96,7 +96,10 @@ class q1_1(object):
             if len(text) < 50:
                 for paragraph in paragraphs:
                     if paragraph['class'] == 'good' and len(text) < 50:
-                        text = text + self.segment_sentences(paragraph['text'].encode('utf8'))
+                        sentences = self.segment_sentences(paragraph['text'].encode('utf8'))
+                        for s in sentences:
+                            if not text.__contains__(s):
+                                text.append(s)
         return text
 
     #tagging the text we got from the web using the tagger we defined above and write it to tagText file
