@@ -39,7 +39,7 @@ def TestMostAmbiguousWords(cfd, N):
     word_with_more_then_n = cfd.conditions() 
     
     ccfd = nltk.ConditionalFreqDist()
-    tagWords = [(w.lower(),t) for (w,t) in brown.tagged_words(categories='news')]
+    tagWords = brown.tagged_words(categories='news')
     for (x,y) in tagWords:
         if word_with_more_then_n.count(x)!= 0 :
             ccfd[x].inc(y)
@@ -56,7 +56,7 @@ def ShowExamples(word, cfd, corpus):
         if w == word :
             for t in cfd[w]:
                 for s in tag_sents:
-                    if [(a.lower(),b) for (a,b) in s].count((w,t))!= 0:
+                    if s.count((w,t))!= 0:
                         sent = ' '.join(b for (b,f) in s)
                         print "\'%s\'" % w +"as %s: " % t + sent 
                         break 
@@ -84,7 +84,7 @@ def Plot3DCorrelation(tagWords):
     plt.show()
            
 def main():
-    tagWords = [(w.lower(),t) for (w,t) in brown.tagged_words(categories='news')]
+    tagWords =  brown.tagged_words(categories='news')
     PlotNumberOfTags(tagWords)
     Plot3DCorrelation(tagWords)
     cfd = MostAmbiguousWords(tagWords, 1)
