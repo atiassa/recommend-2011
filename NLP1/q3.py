@@ -23,7 +23,6 @@ def evaluate2(self,training_corpus):
             unknow += 1
     return float(know) / len(reference)
 
-
 def MicroEvaluate(self,corpus_test):
     tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])#tagger tagged
     testTokens = sum(corpus_test,[]) # real tags from the corpus
@@ -41,6 +40,7 @@ def MicroEvaluate(self,corpus_test):
     return fmeasure / len(tags)
 
 #tag both in the test and by the tagger
+
 def calcTP(tag, CorpusTags, TaggerTags):
     tp = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -50,6 +50,7 @@ def calcTP(tag, CorpusTags, TaggerTags):
     return tp
 
 #non-tag both in the test and by the tagger    
+
 def calcTN(tag, CorpusTags, TaggerTags):
     tn = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -60,6 +61,7 @@ def calcTN(tag, CorpusTags, TaggerTags):
     return tn
     
 #non-tag by the test and tag by the tagger
+
 def calcFP(tag, CorpusTags, TaggerTags):
     fp = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -70,6 +72,7 @@ def calcFP(tag, CorpusTags, TaggerTags):
     return fp
 
 #tag by the test and non tag by the tagger
+
 def calcFN(tag, CorpusTags, TaggerTags):
     fn = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -80,6 +83,7 @@ def calcFN(tag, CorpusTags, TaggerTags):
     return fn
     
 #Precision(T) = TP / TP + FP
+
 def calcPrec(tag, CorpusTags, TaggerTags):
     tp = calcTP(tag, CorpusTags, TaggerTags)
     fp = calcFP(tag, CorpusTags, TaggerTags)
@@ -90,6 +94,7 @@ def calcPrec(tag, CorpusTags, TaggerTags):
     return prec
 
 #Recall(T) = TP / TP + FN    
+
 def calcRecall(tag, CorpusTags, TaggerTags):
     tp = calcTP(tag, CorpusTags, TaggerTags)
     fn = calcFN(tag, CorpusTags, TaggerTags)
@@ -100,6 +105,7 @@ def calcRecall(tag, CorpusTags, TaggerTags):
     return recall
     
 #F-Measure(T) = 2 x Precision x Recall / (Recall + Precision)  
+
 def calcFMeasur(tag, CorpusTags, TaggerTags):
     prec = calcPrec(tag, CorpusTags, TaggerTags)
     recall = calcRecall(tag, CorpusTags, TaggerTags)
@@ -123,6 +129,7 @@ def calcFMeasur(tag, CorpusTags, TaggerTags):
 #                              for any other tag the values should be 0 becasue TP = 0 for each tag  #
 ######################################################################################################
 ######################################################################################################
+
 def checkTaggerPrecForTag(tagger, tag, testCorpus):
     tagged_sents = tagger.batch_tag([nltk.untag(sent) for sent in testCorpus])#tagger tagged
     testTokens = sum(testCorpus,[]) # real tags from the corpus
@@ -135,22 +142,13 @@ def checkTaggerRecallForTag(tagger, tag, testCorpus):
     taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
     return calcRecall(tag, testTokens, taggerTokens)
 
-def ConfusionMatrix(self, corpus_test):
-    matrix = FreqDist()
-    tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])
-    testTokens = sum(corpus_test,[]) # real tags from the corpus
-    taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
-    for tagged, test in izip(taggerTokens, testTokens ):
-        if tagged != test :
-            matrix.inc((tagged[1],test[1]))
-    return matrix
-
 ########################################################################
 ########################################################################
 #defining the simplified taggers and the simplified test and train sets# 
 #and returning the requested tagger and the test set                   #
 ########################################################################
 ########################################################################
+
 def getTaggerAndTestSetInSimplifiedMode(taggerName):
     brown_news_taggedS = brown.tagged_sents(categories='news', simplify_tags=True)
     brown_trainS = brown_news_taggedS[100:]
@@ -190,8 +188,7 @@ def getTaggerAndTestSetInSimplifiedMode(taggerName):
 #Check which X tags are difficult in the dataset.                                                                        #
 #to check this we need to calculate precision for each tag and the tags with the lowest precision are the difficult tags.#
 ##########################################################################################################################
-##########################################################################################################################
-    
+######################################################################################################################    
 def getDifficultTags(tagger, testCorpus, x, tagsSet):
     difficultTags = []
     precs = []
@@ -215,6 +212,7 @@ def getDifficultTags(tagger, testCorpus, x, tagsSet):
 #Check which X tags are difficult in the simplified tagsSet.#                                                                        #
 #############################################################
 #############################################################
+
 def checkSimplifiedDifficultTags(taggerName, x):
     tagger, testCorpus = getTaggerAndTestSetInSimplifiedMode(taggerName)
     tags = ['ADJ', 'ADV', 'CNJ', 'DET', 'EX', 'FW', 'MOD', 'N', 'NP', 'NUM', 'PRO', 'P', 'TO', 'UH', 'V', 'VD', 'VG', 'VN', 'WH']
@@ -225,9 +223,49 @@ def checkSimplifiedDifficultTags(taggerName, x):
 #Check which X tags are difficult in the full tagsSet.#                                                                        #
 #######################################################
 #######################################################
+
 def checkFullDifficultTags(tagger, testCorpus, x):
     tags = []
     return getDifficultTags(tagger, testCorpus, x, tags)
+
+def ConfusionMatrix(self, corpus_test):
+    matrix = FreqDist()
+    tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])
+    testTokens = sum(corpus_test,[]) # real tags from the corpus
+    taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
+    for tagged, test in izip(taggerTokens, testTokens ):
+        if tagged != test :
+            matrix.inc((tagged[1],test[1]))
+    return matrix
+
+def crossValidate(corpus, n):
+    summarize = []
+    corpus_len = len(corpus)
+    mean = 0
+    for i in range(1,n):
+        cut = int(i*0.1*corpus_len)
+        train = corpus[:cut]
+        test = corpus[cut:]
+        
+        nn_tagger = nltk.DefaultTagger('NN')
+        regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+                                           (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+                                           (r'.*able$', 'JJ'),                # adjectives
+                                           (r'.*ness$', 'NN'),                # nouns formed from adjectives
+                                           (r'.*ly$', 'RB'),                  # adverbs
+                                           (r'.*s$', 'NNS'),                  # plural nouns
+                                           (r'.*ing$', 'VBG'),                # gerunds
+                                           (r'.*ed$', 'VBD'),                 # past tense verbs
+                                           (r'.*', 'NN')                      # nouns (default)
+                                           ],backoff=nn_tagger)
+        at2 = nltk.AffixTagger(train, backoff=regexp_tagger)
+        ut3 = nltk.UnigramTagger(train, backoff=at2)
+        ct2 = nltk.NgramTagger(2, train, backoff=ut3)
+        
+        accu = float(ct2.evaluate(test))
+        summarize.append((i,accu))
+        mean += accu
+    return (summarize , mean/accu)
 
 def main():
     nltk.TaggerI.evaluate2 = evaluate2
@@ -260,11 +298,15 @@ def main():
     at2 = nltk.AffixTagger(brown_train, backoff=regexp_tagger)
     ut3 = nltk.UnigramTagger(brown_train, backoff=at2)
     ct2 = nltk.NgramTagger(2, brown_train, backoff=ut3)
+    
     ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3) 
     
-    print nn_tagger.ConfusionMatrix(brown_test)
-    print ct2.ConfusionMatrix(brown_test)
-    print ct2S.ConfusionMatrix(brown_test)
+    print crossValidate(brown_news_tagged,10)
+    
+#    print nn_tagger.ConfusionMatrix(brown_test)
+#    print ct2.ConfusionMatrix(brown_test)
+#    print ct2S.ConfusionMatrix(brown_test)
+    
 #    print "evaluate2 default nn = " , nn_tagger.evaluate2(brown_test)
 #    print "evaluate2 regExp(default nn) = " ,regexp_tagger.evaluate2(brown_train)
 #    print "evaluate2 affix(regExp(default nn)) = " ,at2.evaluate2(brown_train)
