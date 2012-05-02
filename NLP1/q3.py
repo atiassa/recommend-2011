@@ -2,6 +2,7 @@ import  nltk
 from itertools import izip
 from nltk.corpus import brown
 from nltk.metrics import accuracy as _accuracy
+from operator import itemgetter
     
 def evaluate2(self,training_corpus):
     tagged_sents = self.batch_tag([nltk.untag(sent) for sent in training_corpus]) 
@@ -120,6 +121,37 @@ def checkTaggerRecallForTag(tagger, tag, testCorpus):
     taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
     return calcRecall(tag, testTokens, taggerTokens)
 
+##########################################################################################################################
+##########################################################################################################################
+#Check which X tags are difficult in the dataset.                                                               #
+#to check this we need to calculate precision for each tag and the tags with the lowest precision are the difficult tags.#
+##########################################################################################################################
+##########################################################################################################################
+def checkDifficultTags(tagger, testCorpus, isSimplified, x):
+    difficultTags = []
+    corpusTokens = sum(testCorpus, [])
+    simplifiedTags = ['ADJ', 'ADV', 'CNJ', 'DET', 'EX', 'FW', 'MOD', 'NN', 'NP', 'NUM', 'PRO', 'P', 'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'WH']
+    fullTags = []###-------> TODO
+    precs = []
+    tags = []
+    #defining which tags are we checking full or simplified tags
+    if isSimplified:
+        tags = simplifiedTags
+    else:
+        tags = fullTags
+    #calculating precision for each tag
+    tagger_tags = tagger.batch_tag([nltk.untag(sent) for sent in testCorpus])
+    taggedTokens = sum(tagger_tags, [])
+    for t in tags:
+        p = calcPrec(t, corpusTokens, taggedTokens)
+        precs.append((t,p))
+    #insert x lowest tags to difficultTags
+    precs = sorted(precs, key=itemgetter(1))
+    for w,p in precs:
+        if len(difficultTags) < x:
+            difficultTags.append(w)     
+    return difficultTags
+    
 def main():
     
     nltk.DefaultTagger.MicroEvaluate = MicroEvaluate
@@ -127,7 +159,6 @@ def main():
     nltk.AffixTagger.MicroEvaluate = MicroEvaluate
     nltk.UnigramTagger.MicroEvaluate = MicroEvaluate
     nltk.NgramTagger.MicroEvaluate = MicroEvaluate
-    
     
     brown_news_tagged = brown.tagged_sents(categories='news')
     brown_train = brown_news_tagged[100:]
@@ -166,5 +197,6 @@ def main():
     print "default nn prec tag = NN => " , checkTaggerPrecForTag(nn_tagger, 'NN', brown_test)
     print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
     
+    print "difficult tags in simplified dataset : ", checkDifficultTags(ct2, brown_test, True, 4)
 if __name__ == '__main__':
     main() 

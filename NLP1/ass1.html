@@ -122,7 +122,7 @@ For any other tag the values should be 0 because TP = 0 for each tag<br>
 We also can see that the FMeasure avg for the testCorpus is increasing when we improve the taggers (microEvaluate function results),<br>
 same as the original evaluate function of the TaggerI interface. <br>
 <br>
-our output:<br>
+Our Output:<br>
 evaluate default nn  = 0.14594356261<br>
 evaluate regExp(default nn)  = 0.330687830688<br>
 evaluate affix(regExp(default nn))  = 0.4069664903<br>
@@ -142,7 +142,12 @@ default nn prec tag = NN  => 0.14594356261<br>
 default nn recall tag = NN  => 1.0<br>
 <br>
 Which tags are most difficult in the simplified tagset? In the full tagset?<br>
-Answer: 
+Answer: Precision of Certain tag means How often the tagger is correct in the dataset when it predicts the tag.<br>
+That's why we can say that if the precision of a certain tag is low then the tagger often wrong about this tag.<br>
+In conclusion we can say that the tags with the lowest precision are the difficult tags.<br>
+We Implemented a function [checkDifficultTags(tagger, testCorpus, isSimplified, x)] that gets the tagger, the test set, boolean variable which say if we are in simplified mode or full mode, and a no. x which represent the no. of tags we want to return,
+and check which x tags are the most difficult tags in the mode chosen and return the list of these tags.<br>
+Our Output:
 
 <a name="confusion"></a>
 <h4>Confusion Matrix</h4>
