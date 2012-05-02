@@ -237,20 +237,28 @@ def main():
     print "evaluate affix(regExp(default nn)) = " ,at2.evaluate(brown_test)
     print "evaluate unigram(affix(regExp(default nn))) = " ,ut3.evaluate(brown_test)
     print "evaluate bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate(brown_test)
+    print ""
     
     print "micro-evaluate default nn = ", nn_tagger.MicroEvaluate(brown_test)
     print "micro-evaluate regExp(default nn) = ", regexp_tagger.MicroEvaluate(brown_test)
     print "micro-evaluate affix(regExp(default nn)) = ", at2.MicroEvaluate(brown_test)
     print "micro-evaluate unigram(affix(regExp(default nn))) = ", ut3.MicroEvaluate(brown_test)
     print "micro-evaluate bigram(unigram(affix(regExp(default nn)))) = ", ct2.MicroEvaluate(brown_test)
+    print ""
     
     print "default nn prec tag = AT => " , checkTaggerPrecForTag(nn_tagger, 'AT', brown_test)
     print "default nn recall tag = AT => " , checkTaggerRecallForTag(nn_tagger, 'AT', brown_test)
+    print ""
     
     print "default nn prec tag = NN => " , checkTaggerPrecForTag(nn_tagger, 'NN', brown_test)
     print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
+    print ""
     
     print "difficult tags in simplified tagsSet : ", checkSimplifiedDifficultTags("DefaultTagger", 4)
     print "difficult tags in full tagsSet : ", checkFullDifficultTags(nn_tagger, brown_test, 4)
+    print ""
+    
+    
+    
 if __name__ == '__main__':
     main() 
