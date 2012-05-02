@@ -2,13 +2,27 @@ import  nltk
 from itertools import izip
 from nltk.corpus import brown
 from nltk.metrics import accuracy as _accuracy
+from nltk.probability import FreqDist
+from numpy.matrixlib.defmatrix import matrix
 from operator import itemgetter
-    
+# return the precentage of Unknown words - words that tag with None  
+
 def evaluate2(self,training_corpus):
-    tagged_sents = self.batch_tag([nltk.untag(sent) for sent in training_corpus]) 
-    gold_tokens = sum(training_corpus, []) 
-    test_tokens = sum(tagged_sents, []) 
-    return _accuracy(gold_tokens, test_tokens)
+#    tag_words = sum(training_corpus,[])
+#    unknow =  [w for (w ,t) in tag_words if t==None]
+#    return float(len(unknow)) / len(tag_words)
+    tagged_sents = self.batch_tag([nltk.untag(sent) for sent in training_corpus])
+    reference = sum(training_corpus, [])
+    test = sum(tagged_sents, [])
+    know = 0
+    unknow = 0
+    for r, t in izip(reference, test):
+        if t != None :
+            know += 1
+        else: 
+            unknow += 1
+    return float(know) / len(reference)
+
 
 def MicroEvaluate(self,corpus_test):
     tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])#tagger tagged
@@ -121,6 +135,16 @@ def checkTaggerRecallForTag(tagger, tag, testCorpus):
     taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
     return calcRecall(tag, testTokens, taggerTokens)
 
+def ConfusionMatrix(self, corpus_test):
+    matrix = FreqDist()
+    tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])
+    testTokens = sum(corpus_test,[]) # real tags from the corpus
+    taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
+    for tagged, test in izip(taggerTokens, testTokens ):
+        if tagged != test :
+            matrix.inc((tagged[1],test[1]))
+    return matrix
+
 ########################################################################
 ########################################################################
 #defining the simplified taggers and the simplified test and train sets# 
@@ -206,7 +230,8 @@ def checkFullDifficultTags(tagger, testCorpus, x):
     return getDifficultTags(tagger, testCorpus, x, tags)
 
 def main():
-    
+    nltk.TaggerI.evaluate2 = evaluate2
+    nltk.TaggerI.ConfusionMatrix = ConfusionMatrix
     nltk.DefaultTagger.MicroEvaluate = MicroEvaluate
     nltk.RegexpTagger.MicroEvaluate = MicroEvaluate
     nltk.AffixTagger.MicroEvaluate = MicroEvaluate
@@ -216,6 +241,10 @@ def main():
     brown_news_tagged = brown.tagged_sents(categories='news')
     brown_train = brown_news_tagged[100:]
     brown_test = brown_news_tagged[:100]
+    
+    brown_news_taggedS = brown.tagged_sents(categories='news', simplify_tags=True)
+    brown_trainS = brown_news_taggedS[100:]
+    brown_testS = brown_news_taggedS[:100]
         
     nn_tagger = nltk.DefaultTagger('NN')
     regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
@@ -230,35 +259,37 @@ def main():
                                        ],backoff=nn_tagger)
     at2 = nltk.AffixTagger(brown_train, backoff=regexp_tagger)
     ut3 = nltk.UnigramTagger(brown_train, backoff=at2)
-    ct2 = nltk.NgramTagger(2, brown_train, backoff=ut3) 
-        
-    print "evaluate default nn = " , nn_tagger.evaluate(brown_test)
-    print "evaluate regExp(default nn) = " ,regexp_tagger.evaluate(brown_test)
-    print "evaluate affix(regExp(default nn)) = " ,at2.evaluate(brown_test)
-    print "evaluate unigram(affix(regExp(default nn))) = " ,ut3.evaluate(brown_test)
-    print "evaluate bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate(brown_test)
-    print ""
+    ct2 = nltk.NgramTagger(2, brown_train, backoff=ut3)
+    ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3) 
     
-    print "micro-evaluate default nn = ", nn_tagger.MicroEvaluate(brown_test)
-    print "micro-evaluate regExp(default nn) = ", regexp_tagger.MicroEvaluate(brown_test)
-    print "micro-evaluate affix(regExp(default nn)) = ", at2.MicroEvaluate(brown_test)
-    print "micro-evaluate unigram(affix(regExp(default nn))) = ", ut3.MicroEvaluate(brown_test)
-    print "micro-evaluate bigram(unigram(affix(regExp(default nn)))) = ", ct2.MicroEvaluate(brown_test)
-    print ""
-    
-    print "default nn prec tag = AT => " , checkTaggerPrecForTag(nn_tagger, 'AT', brown_test)
-    print "default nn recall tag = AT => " , checkTaggerRecallForTag(nn_tagger, 'AT', brown_test)
-    print ""
-    
-    print "default nn prec tag = NN => " , checkTaggerPrecForTag(nn_tagger, 'NN', brown_test)
-    print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
-    print ""
-    
-    print "4 most difficult tags in simplified tagsSet - bigramTagger with all the backoffs:", checkSimplifiedDifficultTags("BigramTagger", 4)
-    print "4 most difficult tags in full tagsSet - bigramTagger with all the backoffs: ", checkFullDifficultTags(ct2, brown_test, 4)
-    print ""
-    
-    
+    print nn_tagger.ConfusionMatrix(brown_test)
+    print ct2.ConfusionMatrix(brown_test)
+    print ct2S.ConfusionMatrix(brown_test)
+#    print "evaluate2 default nn = " , nn_tagger.evaluate2(brown_test)
+#    print "evaluate2 regExp(default nn) = " ,regexp_tagger.evaluate2(brown_train)
+#    print "evaluate2 affix(regExp(default nn)) = " ,at2.evaluate2(brown_train)
+#    print "evaluate2 unigram(affix(regExp(default nn))) = " ,ut3.evaluate2(brown_train)
+#    print "evaluate2 bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate2(brown_train)   
+#    print "evaluate default nn = " , nn_tagger.evaluate(brown_test)
+#    print "evaluate regExp(default nn) = " ,regexp_tagger.evaluate(brown_test)
+#    print "evaluate affix(regExp(default nn)) = " ,at2.evaluate(brown_test)
+#    print "evaluate unigram(affix(regExp(default nn))) = " ,ut3.evaluate(brown_test)
+#    print "evaluate bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate(brown_test)
+#    
+#    print "micro-evaluate default nn = ", nn_tagger.MicroEvaluate(brown_test)
+#    print "micro-evaluate regExp(default nn) = ", regexp_tagger.MicroEvaluate(brown_test)
+#    print "micro-evaluate affix(regExp(default nn)) = ", at2.MicroEvaluate(brown_test)
+#    print "micro-evaluate unigram(affix(regExp(default nn))) = ", ut3.MicroEvaluate(brown_test)
+#    print "micro-evaluate bigram(unigram(affix(regExp(default nn)))) = ", ct2.MicroEvaluate(brown_test)
+#    
+#    print "default nn prec tag = AT => " , checkTaggerPrecForTag(nn_tagger, 'AT', brown_test)
+#    print "default nn recall tag = AT => " , checkTaggerRecallForTag(nn_tagger, 'AT', brown_test)
+#    
+#    print "default nn prec tag = NN => " , checkTaggerPrecForTag(nn_tagger, 'NN', brown_test)
+#    print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
+
+#    print "4 most difficult tags in simplified tagsSet - bigramTagger with all the backoffs:", checkSimplifiedDifficultTags("BigramTagger", 4)
+#    print "4 most difficult tags in full tagsSet - bigramTagger with all the backoffs: ", checkFullDifficultTags(ct2, brown_test, 4)
     
 if __name__ == '__main__':
     main() 
