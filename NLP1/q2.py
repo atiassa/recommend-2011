@@ -98,6 +98,7 @@ def _train(self, tagged_corpus, cutoff=0, verbose=False):
     total_tags = float(sum(tag_prob.values()))
     tags_probs = [(t,tag_prob[t]/total_tags) for t in tag_prob.keys()]
     useful_contexts_after_filter = useful_contexts.copy()
+    most_high = FreqDist()
     for context in useful_contexts:
         dd = fd[context]
 #        total_tags = float(sum(dd.values()))
@@ -105,7 +106,9 @@ def _train(self, tagged_corpus, cutoff=0, verbose=False):
         h = self.H(dd.keys(),tags_probs)
         if h > cutoff:
             useful_contexts_after_filter.remove(context)
-    
+            continue
+        most_high[context] = h
+#    print most_high.keys()
     # Build the context_to_tag table -- for each context, figure
     # out what the most likely tag is.  
     for context in useful_contexts_after_filter:
