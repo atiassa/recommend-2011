@@ -108,7 +108,7 @@ Answer:
 To Check these Functions (precision and recall) we wrote 2 functions: <br>
 1. checkTaggerPrecForTag(tagger, tag, testCorpus)<br>
 2. checkTaggerRecallForTag(tagger, tag, testCorpus)<br>
-And we run them twice with the default tagger (NN) and for the first time with the tag "NN" and the second time with the tag "AT",<br>
+And we run them twice with the default tagger (NN), for the first time with the tag "NN" and the second time with the tag "AT".<br>
 Expected precision(for the default tag) = same value as evaluate function of TaggerI interface <br>
 										  because TP = no. of words that the tagger tagged right<br>
                                            		  FP = no. of words that in the tagger tagged as 'chosen tag'<br>
@@ -119,7 +119,7 @@ Expected recall(for the default tag) = 1<br>
 <br>
 For any other tag the values should be 0 because TP = 0 for each tag<br>
 <br>
-We also can see that the FMeasure avg for the testCorpus is increasing when we improve the taggers (microEvaluate function results),<br>
+We also can see that the FMeasure avg for the testCorpus is increasing when we improve the taggers (microEvaluate function results),
 same as the original evaluate function of the TaggerI interface. <br>
 <br>
 Our Output:<br>
@@ -145,12 +145,24 @@ Which tags are most difficult in the simplified tagset? In the full tagset?<br>
 Answer: Precision of Certain tag means How often the tagger is correct in the dataset when it predicts the tag.<br>
 That's why we can say that if the precision of a certain tag is low then the tagger often wrong about this tag.<br>
 In conclusion we can say that the tags with the lowest precision are the difficult tags.<br>
-We Implemented a function [checkDifficultTags(tagger, testCorpus, isSimplified, x, taggerName)] that gets the tagger, 
-the test set, boolean variable which say if we are in simplified mode or full mode, no. x which represent the no. of tags we want to return 
-and the taggerName which we need if we want to check the simplified mode.
-and check which x tags are the most difficult tags in the mode chosen and return the list of these tags.<br>
-Our Output:
+We Implemented few functions to deal with this issue:<br>
+1.getTaggerAndTestSetInSimplifiedMode(taggerName):<br>
+<li>Given a tagger name (DefaultTagger,RegExpTagger,AffixTagger,UnigramTagger,BigramTagger) - 
+each tagger is the backoff of the next one,<br>
+<li>the function defines the tagger, the train and test sets with the simplified tags set and returning the tagger and the test set.<br>
+2.getDifficultTags(tagger, testCorpus, x, tagsSet):<br>
+<li>Given a tagger, testSet, tagsSet and x (no. of difficult tags wanted),
+returns list of difficult tags for the requested tagger.<br>
+3.checkSimplifiedDifficultTags(taggerName, x):<br>
+<li>Given a tagger Name and no. of requested difficult tags, returned the difficult tags.<br>
+<li>Of course that this function defined the simplified tags set and calls getDifficultTags func and  getTaggerAndTestSetInSimplifiedMode func.<br>
+4.checkFullDifficultTags(tagger, testCorpus, x):<br>
+<li>Given a tagger and no. of requested difficult tags, returned the difficult tags.<br>
+<li>Of course that this function defined the full tags set and calls getDifficultTags func.<br>
 
+<pre>
+Our code
+</pre>
 <a name="confusion"></a>
 <h4>Confusion Matrix</h4>
 

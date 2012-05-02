@@ -254,8 +254,8 @@ def main():
     print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
     print ""
     
-    print "difficult tags in simplified tagsSet : ", checkSimplifiedDifficultTags("DefaultTagger", 4)
-    print "difficult tags in full tagsSet : ", checkFullDifficultTags(nn_tagger, brown_test, 4)
+    print "4 most difficult tags in simplified tagsSet - bigramTagger with all the backoffs:", checkSimplifiedDifficultTags("BigramTagger", 4)
+    print "4 most difficult tags in full tagsSet - bigramTagger with all the backoffs: ", checkFullDifficultTags(ct2, brown_test, 4)
     print ""
     
     
