@@ -105,6 +105,42 @@ Answer:
 <pre>
 [our code]
 </pre>
+To Check these Functions (precision and recall) we wrote 2 functions: <br>
+1. checkTaggerPrecForTag(tagger, tag, testCorpus)<br>
+2. checkTaggerRecallForTag(tagger, tag, testCorpus)<br>
+And we run them twice with the default tagger (NN) and for the first time with the tag "NN" and the second time with the tag "AT",<br>
+Expected precision(for the default tag) = same value as evaluate function of TaggerI interface <br>
+										  because TP = no. of words that the tagger tagged right<br>
+                                           		  FP = no. of words that in the tagger tagged as 'chosen tag'<br>
+                                           		  	   and the corpusTest tagged as different than the 'chosen tag'<br>
+                                          => TP + FP = no. of words in the test<br>
+Expected recall(for the default tag) = 1<br>
+                                       because FN = 0 for the default tag (the tagger give each word the default tag)<br>
+<br>
+For any other tag the values should be 0 because TP = 0 for each tag<br>
+<br>
+We also can see that the FMeasure avg for the testCorpus is increasing when we improve the taggers (microEvaluate function results),<br>
+same as the original evaluate function of the TaggerI interface. <br>
+<br>
+our output:<br>
+evaluate default nn  = 0.14594356261<br>
+evaluate regExp(default nn)  = 0.330687830688<br>
+evaluate affix(regExp(default nn))  = 0.4069664903<br>
+evaluate unigram(affix(regExp(default nn)))  = 0.887125220459<br>
+evaluate bigram(unigram(affix(regExp(default nn))))  = 0.900793650794<br>
+<br>
+micro-evaluate default nn  = 0.00299662766222<br>
+micro-evaluate regExp(default nn)  = 0.0511631070415<br>
+micro-evaluate affix(regExp(default nn))  = 0.19422104697<br>
+micro-evaluate unigram(affix(regExp(default nn)))  = 0.765386700349<br>
+micro-evaluate bigram(unigram(affix(regExp(default nn))))  = 0.802520278712<br>
+<br>
+default nn prec tag = AT  => 0<br>
+default nn recall tag = AT  => 0.0<br>
+<br>
+default nn prec tag = NN  => 0.14594356261<br>
+default nn recall tag = NN  => 1.0<br>
+<br>
 Which tags are most difficult in the simplified tagset? In the full tagset?<br>
 Answer: 
 

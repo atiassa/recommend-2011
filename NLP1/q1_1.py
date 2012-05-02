@@ -11,14 +11,14 @@ def main():
 #First Part getting about 50 sentences using google search and tagged them with an automatic tagger #
 #write the text without the tags to cleanText.txt file and the tagged text to tagText file          #
 #####################################################################################################
-    sentences = s.getTextFromWeb()
-    text = ""
-    for sen in sentences:
-        text = text + sen + "\n"
-    clean_file = open('cleanText.txt', 'w')
-    clean_file.write(text)
-    clean_file.close()
-    s.tagTextAndWriteToFile(sentences)
+#    sentences = s.getTextFromWeb()
+#    text = ""
+#    for sen in sentences:
+#        text = text + sen + "\n"
+#    clean_file = open('cleanText.txt', 'w')
+#    clean_file.write(text)
+#    clean_file.close()
+#    s.tagTextAndWriteToFile(sentences)
 
 #########################################################
 # Second Part after inserting tagged files to the Corpus#
