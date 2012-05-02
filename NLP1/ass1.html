@@ -145,7 +145,9 @@ Which tags are most difficult in the simplified tagset? In the full tagset?<br>
 Answer: Precision of Certain tag means How often the tagger is correct in the dataset when it predicts the tag.<br>
 That's why we can say that if the precision of a certain tag is low then the tagger often wrong about this tag.<br>
 In conclusion we can say that the tags with the lowest precision are the difficult tags.<br>
-We Implemented a function [checkDifficultTags(tagger, testCorpus, isSimplified, x)] that gets the tagger, the test set, boolean variable which say if we are in simplified mode or full mode, and a no. x which represent the no. of tags we want to return,
+We Implemented a function [checkDifficultTags(tagger, testCorpus, isSimplified, x, taggerName)] that gets the tagger, 
+the test set, boolean variable which say if we are in simplified mode or full mode, no. x which represent the no. of tags we want to return 
+and the taggerName which we need if we want to check the simplified mode.
 and check which x tags are the most difficult tags in the mode chosen and return the list of these tags.<br>
 Our Output:
 

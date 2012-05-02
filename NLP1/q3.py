@@ -121,28 +121,62 @@ def checkTaggerRecallForTag(tagger, tag, testCorpus):
     taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
     return calcRecall(tag, testTokens, taggerTokens)
 
+########################################################################
+########################################################################
+#defining the simplified taggers and the simplified test and train sets# 
+#and returning the requested tagger and the test set                   #
+########################################################################
+########################################################################
+def getTaggerAndTestSetInSimplifiedMode(taggerName):
+    brown_news_taggedS = brown.tagged_sents(categories='news', simplify_tags=True)
+    brown_trainS = brown_news_taggedS[100:]
+    brown_testS = brown_news_taggedS[:100]
+    
+    nn_taggerS = nltk.DefaultTagger('NN')
+    regexp_taggerS = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+                                       (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+                                       (r'.*able$', 'JJ'),                # adjectives
+                                       (r'.*ness$', 'NN'),                # nouns formed from adjectives
+                                       (r'.*ly$', 'RB'),                  # adverbs
+                                       (r'.*s$', 'NNS'),                  # plural nouns
+                                       (r'.*ing$', 'VBG'),                # gerunds
+                                       (r'.*ed$', 'VBD'),                 # past tense verbs
+                                       (r'.*', 'NN')                      # nouns (default)
+                                       ],backoff=nn_taggerS)
+    at2S = nltk.AffixTagger(brown_trainS, backoff=regexp_taggerS)
+    ut3S = nltk.UnigramTagger(brown_trainS, backoff=at2S)
+    ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3S)
+    if taggerName == "DefaultTagger":
+        return nn_taggerS,brown_testS
+    else:
+        if taggerName == "RegExpTagger":
+            return regexp_taggerS, brown_testS
+        else:
+            if taggerName == "AffixTagger":
+                return at2S,brown_testS
+            else:
+                if taggerName == "UnigramTagger":
+                    return ut3S,brown_testS
+                else:
+                    if taggerName == "BigramTagger":
+                        return ct2S,brown_testS
+
 ##########################################################################################################################
 ##########################################################################################################################
-#Check which X tags are difficult in the dataset.                                                               #
+#Check which X tags are difficult in the dataset.                                                                        #
 #to check this we need to calculate precision for each tag and the tags with the lowest precision are the difficult tags.#
 ##########################################################################################################################
 ##########################################################################################################################
-def checkDifficultTags(tagger, testCorpus, isSimplified, x):
+    
+def getDifficultTags(tagger, testCorpus, x, tagsSet):
     difficultTags = []
-    corpusTokens = sum(testCorpus, [])
-    simplifiedTags = ['ADJ', 'ADV', 'CNJ', 'DET', 'EX', 'FW', 'MOD', 'NN', 'NP', 'NUM', 'PRO', 'P', 'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'WH']
-    fullTags = []###-------> TODO
     precs = []
-    tags = []
-    #defining which tags are we checking full or simplified tags
-    if isSimplified:
-        tags = simplifiedTags
-    else:
-        tags = fullTags
+    #defining which tags are we checking full or simplified tags if simplified -> getting the tagger and the testCorpus according to simplified tags set    
+    corpusTokens = sum(testCorpus, [])
     #calculating precision for each tag
     tagger_tags = tagger.batch_tag([nltk.untag(sent) for sent in testCorpus])
     taggedTokens = sum(tagger_tags, [])
-    for t in tags:
+    for t in tagsSet:
         p = calcPrec(t, corpusTokens, taggedTokens)
         precs.append((t,p))
     #insert x lowest tags to difficultTags
@@ -151,7 +185,26 @@ def checkDifficultTags(tagger, testCorpus, isSimplified, x):
         if len(difficultTags) < x:
             difficultTags.append(w)     
     return difficultTags
-    
+
+#############################################################
+#############################################################
+#Check which X tags are difficult in the simplified tagsSet.#                                                                        #
+#############################################################
+#############################################################
+def checkSimplifiedDifficultTags(taggerName, x):
+    tagger, testCorpus = getTaggerAndTestSetInSimplifiedMode(taggerName)
+    tags = ['ADJ', 'ADV', 'CNJ', 'DET', 'EX', 'FW', 'MOD', 'N', 'NP', 'NUM', 'PRO', 'P', 'TO', 'UH', 'V', 'VD', 'VG', 'VN', 'WH']
+    return getDifficultTags(tagger, testCorpus, x, tags)
+
+#######################################################
+#######################################################
+#Check which X tags are difficult in the full tagsSet.#                                                                        #
+#######################################################
+#######################################################
+def checkFullDifficultTags(tagger, testCorpus, x):
+    tags = []
+    return getDifficultTags(tagger, testCorpus, x, tags)
+
 def main():
     
     nltk.DefaultTagger.MicroEvaluate = MicroEvaluate
@@ -197,6 +250,7 @@ def main():
     print "default nn prec tag = NN => " , checkTaggerPrecForTag(nn_tagger, 'NN', brown_test)
     print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
     
-    print "difficult tags in simplified dataset : ", checkDifficultTags(ct2, brown_test, True, 4)
+    print "difficult tags in simplified tagsSet : ", checkSimplifiedDifficultTags("DefaultTagger", 4)
+    print "difficult tags in full tagsSet : ", checkFullDifficultTags(nn_tagger, brown_test, 4)
 if __name__ == '__main__':
     main() 
