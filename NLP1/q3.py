@@ -1,9 +1,8 @@
 import  nltk
+import pylab
 from itertools import izip
 from nltk.corpus import brown
-from nltk.metrics import accuracy as _accuracy
 from nltk.probability import FreqDist
-from numpy.matrixlib.defmatrix import matrix
 from operator import itemgetter
 # return the precentage of Unknown words - words that tag with None  
 
@@ -23,6 +22,9 @@ def evaluate2(self,training_corpus):
             unknow += 1
     return float(know) / len(reference)
 
+######################################################################################################################################################################
+#######################################################################Q 3.2##########################################################################################
+######################################################################################################################################################################
 def MicroEvaluate(self,corpus_test):
     tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])#tagger tagged
     testTokens = sum(corpus_test,[]) # real tags from the corpus
@@ -143,12 +145,9 @@ def checkTaggerRecallForTag(tagger, tag, testCorpus):
     return calcRecall(tag, testTokens, taggerTokens)
 
 ########################################################################
-########################################################################
 #defining the simplified taggers and the simplified test and train sets# 
 #and returning the requested tagger and the test set                   #
 ########################################################################
-########################################################################
-
 def getTaggerAndTestSetInSimplifiedMode(taggerName):
     brown_news_taggedS = brown.tagged_sents(categories='news', simplify_tags=True)
     brown_trainS = brown_news_taggedS[100:]
@@ -184,11 +183,9 @@ def getTaggerAndTestSetInSimplifiedMode(taggerName):
                         return ct2S,brown_testS
 
 ##########################################################################################################################
-##########################################################################################################################
 #Check which X tags are difficult in the dataset.                                                                        #
 #to check this we need to calculate precision for each tag and the tags with the lowest precision are the difficult tags.#
 ##########################################################################################################################
-######################################################################################################################    
 def getDifficultTags(tagger, testCorpus, x, tagsSet):
     difficultTags = []
     precs = []
@@ -207,12 +204,12 @@ def getDifficultTags(tagger, testCorpus, x, tagsSet):
             difficultTags.append(w)     
     return difficultTags
 
-#############################################################
-#############################################################
-#Check which X tags are difficult in the simplified tagsSet.#                                                                        #
-#############################################################
-#############################################################
 
+#############################################################
+#############################################################
+#Check which X tags are difficult in the simplified tagsSet.#
+#############################################################
+#############################################################
 def checkSimplifiedDifficultTags(taggerName, x):
     tagger, testCorpus = getTaggerAndTestSetInSimplifiedMode(taggerName)
     tags = ['ADJ', 'ADV', 'CNJ', 'DET', 'EX', 'FW', 'MOD', 'N', 'NP', 'NUM', 'PRO', 'P', 'TO', 'UH', 'V', 'VD', 'VG', 'VN', 'WH']
@@ -220,13 +217,15 @@ def checkSimplifiedDifficultTags(taggerName, x):
 
 #######################################################
 #######################################################
-#Check which X tags are difficult in the full tagsSet.#                                                                        #
+#Check which X tags are difficult in the full tagsSet.#
 #######################################################
 #######################################################
-
 def checkFullDifficultTags(tagger, testCorpus, x):
     tags = []
     return getDifficultTags(tagger, testCorpus, x, tags)
+
+######################################################################################################################################################################
+######################################################################################################################################################################
 
 def ConfusionMatrix(self, corpus_test):
     matrix = FreqDist()
@@ -267,71 +266,104 @@ def crossValidate(corpus, n):
         mean += accu
     return (summarize , mean/accu)
 
+######################################################################################################################################################################
+#######################################################################Q 3.5##########################################################################################
+######################################################################################################################################################################
+
+#plot distribution of sentences by length
+def getDistSentByLength():
+    corpusSentences = []
+    cats = brown.categories()
+    for cat in cats:
+        corpusSentences = corpusSentences + brown.sents(categories=cat)
+    fd = nltk.FreqDist(len(sen) for sen in corpusSentences)
+    
+    length = sorted(fd.keys())
+    noSent = [fd[n] for n in length]
+    pylab.plot(length, noSent)
+    pylab.title('Distribution of Sentences by Length')
+    pylab.xlabel('Length')
+    pylab.ylabel('Number of Sentences')
+    pylab.grid(True)
+    pylab.show()
+
+def divideToLengthClasses(cat='All'):
+    print "todo"
+    
+def stratifiedSamples(classes, N):
+    print "todo"
+######################################################################################################################################################################
+######################################################################################################################################################################
+
 def main():
     nltk.TaggerI.evaluate2 = evaluate2
     nltk.TaggerI.ConfusionMatrix = ConfusionMatrix
-    nltk.DefaultTagger.MicroEvaluate = MicroEvaluate
-    nltk.RegexpTagger.MicroEvaluate = MicroEvaluate
-    nltk.AffixTagger.MicroEvaluate = MicroEvaluate
-    nltk.UnigramTagger.MicroEvaluate = MicroEvaluate
-    nltk.NgramTagger.MicroEvaluate = MicroEvaluate
+    nltk.TaggerI.MicroEvaluate = MicroEvaluate
+
+#    brown_news_tagged = brown.tagged_sents(categories='news')
+#    brown_train = brown_news_tagged[100:]
+#    brown_test = brown_news_tagged[:100]
+#    
+#    brown_news_taggedS = brown.tagged_sents(categories='news', simplify_tags=True)
+#    brown_trainS = brown_news_taggedS[100:]
+#    brown_testS = brown_news_taggedS[:100]
+#        
+#    nn_tagger = nltk.DefaultTagger('NN')
+#    regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+#                                       (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+#                                       (r'.*able$', 'JJ'),                # adjectives
+#                                       (r'.*ness$', 'NN'),                # nouns formed from adjectives
+#                                       (r'.*ly$', 'RB'),                  # adverbs
+#                                       (r'.*s$', 'NNS'),                  # plural nouns
+#                                       (r'.*ing$', 'VBG'),                # gerunds
+#                                       (r'.*ed$', 'VBD'),                 # past tense verbs
+#                                       (r'.*', 'NN')                      # nouns (default)
+#                                       ],backoff=nn_tagger)
+#    at2 = nltk.AffixTagger(brown_train, backoff=regexp_tagger)
+#    ut3 = nltk.UnigramTagger(brown_train, backoff=at2)
+#    ct2 = nltk.NgramTagger(2, brown_train, backoff=ut3)
+#    
+#    ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3) 
     
-    brown_news_tagged = brown.tagged_sents(categories='news')
-    brown_train = brown_news_tagged[100:]
-    brown_test = brown_news_tagged[:100]
-    
-    brown_news_taggedS = brown.tagged_sents(categories='news', simplify_tags=True)
-    brown_trainS = brown_news_taggedS[100:]
-    brown_testS = brown_news_taggedS[:100]
-        
-    nn_tagger = nltk.DefaultTagger('NN')
-    regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
-                                       (r'(The|the|A|a|An|an)$', 'AT'),   # articles
-                                       (r'.*able$', 'JJ'),                # adjectives
-                                       (r'.*ness$', 'NN'),                # nouns formed from adjectives
-                                       (r'.*ly$', 'RB'),                  # adverbs
-                                       (r'.*s$', 'NNS'),                  # plural nouns
-                                       (r'.*ing$', 'VBG'),                # gerunds
-                                       (r'.*ed$', 'VBD'),                 # past tense verbs
-                                       (r'.*', 'NN')                      # nouns (default)
-                                       ],backoff=nn_tagger)
-    at2 = nltk.AffixTagger(brown_train, backoff=regexp_tagger)
-    ut3 = nltk.UnigramTagger(brown_train, backoff=at2)
-    ct2 = nltk.NgramTagger(2, brown_train, backoff=ut3)
-    
-    ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3) 
-    
-    print crossValidate(brown_news_tagged,10)
+#    print crossValidate(brown_news_tagged,10)
     
 #    print nn_tagger.ConfusionMatrix(brown_test)
 #    print ct2.ConfusionMatrix(brown_test)
 #    print ct2S.ConfusionMatrix(brown_test)
-    
+#    print ""  
+#    
 #    print "evaluate2 default nn = " , nn_tagger.evaluate2(brown_test)
 #    print "evaluate2 regExp(default nn) = " ,regexp_tagger.evaluate2(brown_train)
 #    print "evaluate2 affix(regExp(default nn)) = " ,at2.evaluate2(brown_train)
 #    print "evaluate2 unigram(affix(regExp(default nn))) = " ,ut3.evaluate2(brown_train)
-#    print "evaluate2 bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate2(brown_train)   
+#    print "evaluate2 bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate2(brown_train) 
+#    print ""  
+#
 #    print "evaluate default nn = " , nn_tagger.evaluate(brown_test)
 #    print "evaluate regExp(default nn) = " ,regexp_tagger.evaluate(brown_test)
 #    print "evaluate affix(regExp(default nn)) = " ,at2.evaluate(brown_test)
 #    print "evaluate unigram(affix(regExp(default nn))) = " ,ut3.evaluate(brown_test)
 #    print "evaluate bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate(brown_test)
+#    print ""  
 #    
 #    print "micro-evaluate default nn = ", nn_tagger.MicroEvaluate(brown_test)
 #    print "micro-evaluate regExp(default nn) = ", regexp_tagger.MicroEvaluate(brown_test)
 #    print "micro-evaluate affix(regExp(default nn)) = ", at2.MicroEvaluate(brown_test)
 #    print "micro-evaluate unigram(affix(regExp(default nn))) = ", ut3.MicroEvaluate(brown_test)
 #    print "micro-evaluate bigram(unigram(affix(regExp(default nn)))) = ", ct2.MicroEvaluate(brown_test)
+#    print ""  
 #    
 #    print "default nn prec tag = AT => " , checkTaggerPrecForTag(nn_tagger, 'AT', brown_test)
 #    print "default nn recall tag = AT => " , checkTaggerRecallForTag(nn_tagger, 'AT', brown_test)
+#    print "" 
 #    
 #    print "default nn prec tag = NN => " , checkTaggerPrecForTag(nn_tagger, 'NN', brown_test)
 #    print "default nn recall tag = NN => " , checkTaggerRecallForTag(nn_tagger, 'NN', brown_test)
-
+#    print "" 
+#
 #    print "4 most difficult tags in simplified tagsSet - bigramTagger with all the backoffs:", checkSimplifiedDifficultTags("BigramTagger", 4)
 #    print "4 most difficult tags in full tagsSet - bigramTagger with all the backoffs: ", checkFullDifficultTags(ct2, brown_test, 4)
-    
+#    print "" 
+
 if __name__ == '__main__':
     main() 

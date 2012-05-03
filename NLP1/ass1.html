@@ -13,7 +13,7 @@
 
 <b>Shimi Malka 066461641</b>
 <br>
-<b>Netali Alima 300724714</b>
+<b>Netali Alima 300712742</b>
 
 <h2>Our Solutions: </h2>
 
@@ -188,8 +188,33 @@ the last tagger discussed in class.  Discuss the results.
 
 <a name="stratified"></a>
 <h4>Stratified Samples</h4>
+First Step: Finding the distribution of sentences by length
+We Created a function that calculates the no. of sentences to each sentence's length and plot a graph that describe this distribution.<br>
+In Class we said that the avg length of a sentence is 20, when we look on the graph we can see that 20 is the area where the no. of sentences is the highest.<br>
+Also we can see that from length 20 to 40 the no. of sentences is decreasing rapidly and after 40 is the tail of the graph.<br>
+As a result of this findings we decided:<br>
+<li>The Short class will consist of sentences with length smaller than 20<br> 
+<li>The Medium Class will consist of sentences with length 20-40<br>
+<li>The Long Class will consist of sentences with length bigger than 80<br>
+The Graph:<br>
+<img src="DistLengthSenToNoSent.PNG" width="600" height="480" />
 <pre>
-[our code]
+#plot distribution of sentences by length
+def getDistSentByLength():
+    corpusSentences = []
+    cats = brown.categories()
+    for cat in cats:
+        corpusSentences = corpusSentences + brown.sents(categories=cat)
+    fd = nltk.FreqDist(len(sen) for sen in corpusSentences)
+    
+    length = sorted(fd.keys())
+    noSent = [fd[n] for n in length]
+    pylab.plot(length, noSent)
+    pylab.title('Distribution of Sentences by Length')
+    pylab.xlabel('Length')
+    pylab.ylabel('Number of Sentences')
+    pylab.grid(True)
+    pylab.show()
 </pre>
 Discuss the results you observe.
 
