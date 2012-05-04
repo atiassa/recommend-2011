@@ -395,18 +395,125 @@ Unigram tagger accuracy: 86.5%<br>
 
 <h4>Affix Tagger</h4>
 <pre>
-[our code]
+import  nltk
+from nltk.corpus import brown
+import numpy as np
+from nltk.probability import FreqDist, ConditionalFreqDist 
+
+# try fo find the best cutoff parameter to tagger eith entropy
+# run over the development words  
+def optimize_parameter():
+    brown_news_tagged = brown.tagged_sents(categories='news')
+    brown_train = brown_news_tagged[:int(0.8*len(brown_news_tagged))]
+    rest = brown_news_tagged[int(0.8*len(brown_news_tagged)):]
+    brown_development = rest[:int(0.5*len(rest))]
+    brown_test = rest[int(0.5*len(rest)):]
+    opt_cut_of = 0
+    best_accu = 0
+    
+    for cut_off in range(0,10):
+        affix_tagger = nltk.AffixTagger(brown_train ,backoff=None , cutoff=cut_off)
+        accu = 100.0 * affix_tagger.evaluate(brown_development)
+        if  accu > best_accu :
+            best_accu = accu
+            opt_cut_of = cut_off
+    return opt_cut_of
+
+# return entropy like the formula H(x) = sum(P(xi)*log(P(xi)))
+# tag_ probd - the P(xi) for all tags 
+# tl - list of tags   
+def _H(self, tl, tag_probs):
+    ans = 0
+    for t in tl:
+        i =  [x[0] for x in tag_probs].index(t)
+        p = tag_probs[i][1]
+        ans += p*np.log2(p) 
+    return -ans
+
+def _train(self, tagged_corpus, cutoff=0, verbose=False): 
+    token_count = hit_count = 0 
+    useful_contexts = set() 
+    fd = ConditionalFreqDist() 
+    tag_prob = FreqDist()
+    for sentence in tagged_corpus: 
+        tokens, tags = zip(*sentence) 
+        for index, (token, tag) in enumerate(sentence): 
+            # Record the event. 
+            token_count += 1 
+            tag_prob.inc(tag)
+            context = self.context(tokens, index, tags[:index])
+            if context is None: continue 
+            fd[context].inc(tag) 
+            # If the backoff got it wrong, this context is useful: 
+            if (self.backoff is None or 
+                tag != self.backoff.tag_one(tokens, index, tags[:index])): 
+                useful_contexts.add(context) 
+    # Build the context_to_tag table -- for each context,  
+    # calculate the entropy.  Only include contexts that 
+    # lower then `cutoff` .
+    total_tags = float(sum(tag_prob.values()))
+    tags_probs = [(t,tag_prob[t]/total_tags) for t in tag_prob.keys()]
+    useful_contexts_after_filter = useful_contexts.copy()
+    most_high = FreqDist()
+    for context in useful_contexts:
+        dd = fd[context]
+#        total_tags = float(sum(dd.values()))
+#        tags_probs = [(t,dd[t]/total_tags) for t in dd.keys()]
+        h = self.H(dd.keys(),tags_probs)
+        if h > cutoff:
+            useful_contexts_after_filter.remove(context)
+            continue
+        most_high[context] = h
+#    print most_high.keys()
+    # Build the context_to_tag table -- for each context, figure
+    # out what the most likely tag is.  
+    for context in useful_contexts_after_filter:
+        best_tag = fd[context].max()
+        hits = fd[context][best_tag]
+        self._context_to_tag[context] = best_tag
+        hit_count += hits
+    # Display some stats, if requested. 
+    if verbose: 
+        size = len(self._context_to_tag) 
+        backoff = 100 - (hit_count * 100.0)/ token_count 
+        pruning = 100 - (size * 100.0) / len(fd.conditions()) 
+        print "[Trained Unigram tagger:", 
+        print "size=%d, backoff=%.2f%%, pruning=%.2f%%]" % (size, backoff, pruning)
+        
+
+def main():
+    brown_news_tagged = brown.tagged_sents(categories='news')
+    brown_train = brown_news_tagged[:int(0.8*len(brown_news_tagged))]
+    rest = brown_news_tagged[int(0.8*len(brown_news_tagged)):]
+    brown_development = rest[:int(0.5*len(rest))]
+    brown_test = rest[int(0.5*len(rest)):]
+    
+    affix_tagger = nltk.AffixTagger(brown_train, backoff= nltk.DefaultTagger('NN') , cutoff=2)
+    nltk.AffixTagger._train = _train
+    nltk.AffixTagger.H = _H
+    optcutoff = optimize_parameter()
+    print "the optimal cutoff param is: %d " % optcutoff 
+    affix_tagger2 = nltk.AffixTagger(brown_train, backoff= nltk.DefaultTagger('NN') , cutoff=optcutoff)
+
+    print 'Unigram tagger accuracy: %4.1f%%' % ( 100.0 * affix_tagger.evaluate(brown_test))
+    print 'Unigram tagger accuracy with entropy: %4.1f%%' % ( 100.0 * affix_tagger2.evaluate(brown_test))
 </pre>
+Output:<br>
+the optimal cutoff param is: 2<br> 
+Unigram tagger accuracy: 27.0%<br>
+Unigram tagger accuracy with entropy: 27.3%<br><br>
 Observations: 
 <ol>
 <li>does entropy filtering improve accuracy? <br>
-Answer:
+Answer: as you can see - yes
 <li>how do you determine the range of values to test for the cutoff?<br>
-Answer:
+Answer: we run the optimal function few times and saw that after 2-5 times the accuracy is stay stable<br>
+so we take the range 1-10. 
 <li>is the accuracy value evolving in a predictable manner as the cutoff varies?<br>
-Answer:
+Answer: yes - it is raising and fix on one value for the rest of the run.
 <li>describe the list of suffixes that are good tag predictors -- are you surprised by what you observe?<br>
-Answer:
+Answer: ['ard', 'ter', 'ght', 'und', 'her', 'ing', 'nce', 'ove', 'der', 'ite', 'ugh', 'ide', 'est', 'ent', 'ore', ...]<br>
+not surprising at all, those are the most common suffiex in English.
 </ol>
 
 <a name="error"></a>
@@ -416,7 +523,7 @@ Answer:
 <h4>Known vs. Unknown Accuracy</h4>
 
 <pre>
-[our code]
+[our code TO DO]
 </pre>
 
 <a name="pertag"></a>
@@ -726,25 +833,89 @@ def main():
 <h4>Confusion Matrix</h4>
 
 <pre>
-[our code]
+def ConfusionMatrix(self, corpus_test):
+    matrix = FreqDist()
+    tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])
+    testTokens = sum(corpus_test,[]) # real tags from the corpus
+    taggerTokens = sum(tagged_sents,[]) # tags of the tagger that in used
+    for tagged, test in izip(taggerTokens, testTokens ):
+        if tagged != test :
+            matrix.inc((tagged[1],test[1]))
+    return matrix
 </pre>
 <p/>
 Report the confusion matrix for the full tagset and simplified tagset of the Brown corpus for the last tagger
-discussed in class.  Discuss the results: which pairs of tags are the most difficult to distinguish?
-<p/>
-Given your observation on the most likely confusions, propose a simple (engineering) method to improve the results
-of your tagger.  Implement this improvement and report on error reduction.
-
+discussed in class.  Discuss the results: which pairs of tags are the most difficult to distinguish?<br>
+Output:<br>
+< FreqDist: ('NN', 'NP'): 27, ('VBD', 'VBN'): 22, ('NP', 'NP-TL'): 17, ('VBN', 'VBD'): 11, ('NN', 'VB'): 9,<br>
+ ('TO', 'IN'): 9, ('NN', 'JJ'): 8, ('VB', 'NN'): 5, ('NN', 'NN-HL'): 4, ('NNS', 'VBZ'): 4, <br>
+ ('NP-TL', 'NP'): 4, ('WRB', 'NP'): 4, ('CS', 'IN'): 3, ('JJ', 'NN'): 3, ('NN', 'NN-TL'): 3, <br>
+ ('NN', 'NNS'): 3, ('NN', 'VBG'): 3, ('NN$', 'NP$'): 3, ('NN-HL', 'NP'): 3, ('NN-TL', 'NN'): 3, ... ><br>
+ As you can see, the pairs of tags are most difficult to distinguish are : (NN,NP) , (VBD , VBN) , (NP-TL)<BR>
+ and maybe this is like that cause thay are from the same family but only fine ones.<br>
+ <p/>
 
 <a name="size"></a>
 <h4>Sensitivity to the Size and Structure of the Training Set: Cross-Validation</h4>
 
 <pre>
-[our code]
+import  nltk
+from itertools import izip
+from nltk.corpus import brown
+from nltk.probability import FreqDist
+
+# cross-validation process consists of splitting the data in 10 subsets of 10% each. 
+# iterate the process of training/testing 10 times,
+# each time withholding one subset of 10% for testing and training on the other 9 subsets.
+# return the results of the accuracy as a table with rows: i (iteration number), accuracy(i) 
+# and accuracy averaged over the ten experiments as tuple 
+def crossValidate(corpus, n):
+    summarize = []
+    corpus_len = len(corpus)
+    mean = 0
+    for i in range(1,n):
+        cut = int(i*0.1*corpus_len)
+        train = corpus[:cut]
+        test = corpus[cut:]
+        
+        nn_tagger = nltk.DefaultTagger('NN')
+        regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+                                           (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+                                           (r'.*able$', 'JJ'),                # adjectives
+                                           (r'.*ness$', 'NN'),                # nouns formed from adjectives
+                                           (r'.*ly$', 'RB'),                  # adverbs
+                                           (r'.*s$', 'NNS'),                  # plural nouns
+                                           (r'.*ing$', 'VBG'),                # gerunds
+                                           (r'.*ed$', 'VBD'),                 # past tense verbs
+                                           (r'.*', 'NN')                      # nouns (default)
+                                           ],backoff=nn_tagger)
+        at2 = nltk.AffixTagger(train, backoff=regexp_tagger)
+        ut3 = nltk.UnigramTagger(train, backoff=at2)
+        ct2 = nltk.NgramTagger(2, train, backoff=ut3)
+        
+        accu = float(ct2.evaluate(test))
+        summarize.append((i,accu))
+        mean += accu
+    return (summarize , mean/accu)
+ 
+def main():
+    brown_news_tagged = brown.tagged_sents(categories='news')
+    p = crossValidate(brown_news_tagged,10)
+    print "accuracy table:"
+    print p[0]
+    print "accuracy mean: %d" %p[1]
 </pre>
 Implement a method crossValidate(corpus, n) for trainable taggers.  Report the 10-fold cross-validation results for 
-the last tagger discussed in class.  Discuss the results.
-
+the last tagger discussed in class.  Discuss the results:<br>
+The results: <br>
+    accuracy table:<br>
+    [(1, 0.7854381802181154), (2, 0.8069191969636437), (3, 0.8309586506298484), (4, 0.8460526099330449), <br>
+     (5, 0.8565380904562191), (6, 0.8631057484794977), (7, 0.8718763909200737), (8, 0.8748012910063105),<br> 
+     (9, 0.8831854878899631)] <br>
+    accuracy mean: 8 <br>
+as you see - the accuracy is raising as the train go bigger <br>
+- and it was expected cause the tagger learn from the train, <br>
+so he "knows" more as the train go bigger.<br>
 <a name="stratified"></a>
 <h4>Stratified Samples</h4>
 

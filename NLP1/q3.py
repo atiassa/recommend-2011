@@ -86,29 +86,32 @@ def main():
     at2 = nltk.AffixTagger(brown_train, backoff=regexp_tagger)
     ut3 = nltk.UnigramTagger(brown_train, backoff=at2)
     ct2 = nltk.NgramTagger(2, brown_train, backoff=ut3)
+#    
+#    ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3) 
     
-    ct2S = nltk.NgramTagger(2, brown_trainS, backoff=ut3) 
-    
-    print crossValidate(brown_news_tagged,10)
+#    p = crossValidate(brown_news_tagged,10)
+#    print "accuracy table:"
+#    print p[0]
+#    print "accuracy mean: %f" %p[1] 
     
     print nn_tagger.ConfusionMatrix(brown_test)
     print ct2.ConfusionMatrix(brown_test)
-    print ct2S.ConfusionMatrix(brown_test)
+#    print ct2S.ConfusionMatrix(brown_test)
     print ""  
-    
-    print "evaluate2 default nn = " , nn_tagger.evaluate2(brown_test)
-    print "evaluate2 regExp(default nn) = " ,regexp_tagger.evaluate2(brown_train)
-    print "evaluate2 affix(regExp(default nn)) = " ,at2.evaluate2(brown_train)
-    print "evaluate2 unigram(affix(regExp(default nn))) = " ,ut3.evaluate2(brown_train)
-    print "evaluate2 bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate2(brown_train) 
-    print ""  
-
-    print "evaluate default nn = " , nn_tagger.evaluate(brown_test)
-    print "evaluate regExp(default nn) = " ,regexp_tagger.evaluate(brown_test)
-    print "evaluate affix(regExp(default nn)) = " ,at2.evaluate(brown_test)
-    print "evaluate unigram(affix(regExp(default nn))) = " ,ut3.evaluate(brown_test)
-    print "evaluate bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate(brown_test)
-    print ""  
-    
+#    
+#    print "evaluate2 default nn = " , nn_tagger.evaluate2(brown_test)
+#    print "evaluate2 regExp(default nn) = " ,regexp_tagger.evaluate2(brown_train)
+#    print "evaluate2 affix(regExp(default nn)) = " ,at2.evaluate2(brown_train)
+#    print "evaluate2 unigram(affix(regExp(default nn))) = " ,ut3.evaluate2(brown_train)
+#    print "evaluate2 bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate2(brown_train) 
+#    print ""  
+#
+#    print "evaluate default nn = " , nn_tagger.evaluate(brown_test)
+#    print "evaluate regExp(default nn) = " ,regexp_tagger.evaluate(brown_test)
+#    print "evaluate affix(regExp(default nn)) = " ,at2.evaluate(brown_test)
+#    print "evaluate unigram(affix(regExp(default nn))) = " ,ut3.evaluate(brown_test)
+#    print "evaluate bigram(unigram(affix(regExp(default nn)))) = " ,ct2.evaluate(brown_test)
+#    print ""  
+#    
 if __name__ == '__main__':
     main() 
