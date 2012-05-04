@@ -241,17 +241,17 @@ Which tags are most difficult in the simplified tagset? In the full tagset?<br>
 Answer: Precision of Certain tag means How often the tagger is correct in the dataset when it predicts the tag.<br>
 That's why we can say that if the precision of a certain tag is low then the tagger often wrong about this tag.<br>
 In conclusion we can say that the tags with the lowest precision are the difficult tags.<br>
-We Implemented few functions to deal with this issue:<br>
+We Implemented few functions to deal with this issue:<br><br>
 1.getTaggerAndTestSetInSimplifiedMode(taggerName):<br>
 <li>Given a tagger name (DefaultTagger,RegExpTagger,AffixTagger,UnigramTagger,BigramTagger) - 
-each tagger is the backoff of the next one,<br>
-<li>the function defines the tagger, the train and test sets with the simplified tags set and returning the tagger and the test set.<br>
+each tagger is the backoff of the next one,
+the function defines the tagger, the train and test sets with the simplified tags set and returning the tagger and the test set.<br><br>
 2.getDifficultTags(tagger, testCorpus, x, tagsSet):<br>
 <li>Given a tagger, testSet, tagsSet and x (no. of difficult tags wanted),
-returns list of difficult tags for the requested tagger.<br>
+returns list of difficult tags for the requested tagger.<br><br>
 3.checkSimplifiedDifficultTags(taggerName, x):<br>
 <li>Given a tagger Name and no. of requested difficult tags, returned the difficult tags.<br>
-<li>Of course that this function defined the simplified tags set and calls getDifficultTags func and  getTaggerAndTestSetInSimplifiedMode func.<br>
+<li>Of course that this function defined the simplified tags set and calls getDifficultTags func and  getTaggerAndTestSetInSimplifiedMode func.<br><br>
 4.checkFullDifficultTags(tagger, testCorpus, x):<br>
 <li>Given a tagger and no. of requested difficult tags, returned the difficult tags.<br>
 <li>Of course that this function defined the full tags set and calls getDifficultTags func.<br>
