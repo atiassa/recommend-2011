@@ -1,6 +1,5 @@
 import nltk 
 import urllib2
-#from xgoogle.search import GoogleSearch, SearchError
 import google
 import justext
 from nltk.corpus import brown
@@ -26,12 +25,12 @@ def main():
     #ca45 => first human tagged file
     #ca46 => second human tagged file
     #ca47 => automatic tagger tagged file
-#    dif1 = s.Compare_files('ca45', 'ca46') #compare 2 human taggs
-#    dif2 = s.Compare_files('ca45', 'ca47') #compare first human taggs to auto tagger
-#    dif3 = s.Compare_files('ca46', 'ca47') #compare second human taggs to auto tagger
-#    s.write_differences_to_dif_file(dif1, 'Dif2Human.txt')
-#    s.write_differences_to_dif_file(dif2, 'DifFirstHumanToAuto.txt')
-#    s.write_differences_to_dif_file(dif3, 'DifSecondtHumanToAuto.txt')
+    dif1 = s.Compare_files('ca45', 'ca46') #compare 2 human taggs
+    dif2 = s.Compare_files('ca47', 'ca45') #compare first human taggs to auto tagger
+    dif3 = s.Compare_files('ca47', 'ca46') #compare second human taggs to auto tagger
+    s.write_differences_to_dif_file(dif1, 'Dif2Human.txt')
+    s.write_differences_to_dif_file(dif2, 'DifFirstHumanToAuto.txt')
+    s.write_differences_to_dif_file(dif3, 'DifSecondtHumanToAuto.txt')
     
     print "end"
            
@@ -56,7 +55,7 @@ class q1_1(object):
         ct2 = nltk.NgramTagger(2, brown_news_tagged, backoff=ut3)
         return ct2
     
-    #split the whole text to sentences using . or ? or ! delimeters
+    #split the whole text to sentences using . or ? or ! as delimeters
     def segment_sentences(self,words):
         start = 0
         sents = []
@@ -118,7 +117,10 @@ class q1_1(object):
     #we assume we are talking on the same file and the only thing that can be different is the tag for each word
     def Compare_files(self, firstName, secondName):
         differences = []
-        file1Sentences = brown.tagged_sents(fileids=[firstName])
+        if firstName == 'ca47':#the tagger tag file is tagged in full mode
+            file1Sentences = brown.tagged_sents(fileids=[firstName], simplify_tags=True)
+        else:#our files were tagged in simplify mode
+            file1Sentences = brown.tagged_sents(fileids=[firstName])
         file2Sentences = brown.tagged_sents(fileids=[secondName])
         i = 0
         while len(file1Sentences) != i:
@@ -138,7 +140,7 @@ class q1_1(object):
     def write_differences_to_dif_file(self, dif, difFileName):
         dif_file = open(difFileName, 'w')
         for w in dif:
-            dif_file.write(w + "\n")
+            dif_file.write(w + " / ")
         dif_file.close()
                 
 
