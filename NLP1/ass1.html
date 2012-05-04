@@ -417,6 +417,7 @@ the last tagger discussed in class.  Discuss the results.
 
 <a name="stratified"></a>
 <h4>Stratified Samples</h4>
+
 First Step: Finding the distribution of sentences by length
 We Created a function that calculates the no. of sentences to each sentence's length and plot a graph that describe this distribution.<br>
 In Class we said that the avg length of a sentence is 20, when we look on the graph we can see that 20 is the area where the no. of sentences is the highest.<br>
@@ -472,9 +473,19 @@ def divideToLengthClasses(cat='All'):
 <br>
 Third Step:<br>
 We Created a method that construct a stratified dataset given the classes.<br>
-The method should return the train and test sets.<br>
+The method returns the train and test sets.<br>
 <pre>
-Our Code
+def stratifiedSamples(classes, N):
+    testSet = []
+    trainSet = []
+    for cl in classes:
+        noSenTest = int((float(N)/100)*len(cl))
+        while noSenTest > 0:
+            r = int(random.uniform(1,len(cl)-1))
+            testSet.append(cl.pop(r))
+            noSenTest -= 1
+        trainSet = trainSet + cl
+    return trainSet, testSet
 </pre>
 <br>
 Last Step:<br>
@@ -482,10 +493,98 @@ Perform a cycle of training-testing on the Brown corpus for the last tagger disc
 <li>Random split 90%-10%<br>
 <li>Stratified split 90%-10% according to sentence length (split short/medium/long)<br>
 <li>Stratified split 90%-10% according to the sentence genre<br>
+<br>
+We added another function to divide the corpus to Genere Classes.<br>
+On the main Function we perform the cycle of training-testing on the Brown corpus.<br>
+The tagger is Bigram tagger(Unigram tagger(Affix tagger(regExp(Default NN tageer)))).<br>
 <pre>
-Our Code
+def divideToGenereClasses():
+    classes = []
+    taggedSentences = []
+    cats = brown.categories()
+    for cat in cats:
+        for sen in brown.tagged_sents(categories=cat):
+            taggedSentences.append(sen)
+        classes.append(taggedSentences)
+    return classes
+    
+def main():
+    #ploting the distribution graph
+#    getDistSentByLength()
+    #############################################################
+    #cycle of training-testing First case - Random split 90%-10%#
+    #############################################################
+    train, test = stratifiedSamples([getAllTaggedCorpus()], 10)
+
+    nn_tagger = nltk.DefaultTagger('NN')
+    regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+                                       (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+                                       (r'.*able$', 'JJ'),                # adjectives
+                                       (r'.*ness$', 'NN'),                # nouns formed from adjectives
+                                       (r'.*ly$', 'RB'),                  # adverbs
+                                       (r'.*s$', 'NNS'),                  # plural nouns
+                                       (r'.*ing$', 'VBG'),                # gerunds
+                                       (r'.*ed$', 'VBD'),                 # past tense verbs
+                                       (r'.*', 'NN')                      # nouns (default)
+                                       ],backoff=nn_tagger)
+    at2 = nltk.AffixTagger(train, backoff=regexp_tagger)
+    ut3 = nltk.UnigramTagger(train, backoff=at2)
+    ct2 = nltk.NgramTagger(2, train, backoff=ut3)
+    print "evaluate bigram(unigram(affix(regExp(default nn)))) Random Split= " ,ct2.evaluate(test)
+    
+    ###############################################################################################
+    #cycle of training-testing second case - Stratified split 90%-10% according to sentence length#
+    ###############################################################################################
+    classes = divideToLengthClasses()
+    train, test = stratifiedSamples(classes, 10)
+
+    nn_tagger = nltk.DefaultTagger('NN')
+    regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+                                       (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+                                       (r'.*able$', 'JJ'),                # adjectives
+                                       (r'.*ness$', 'NN'),                # nouns formed from adjectives
+                                       (r'.*ly$', 'RB'),                  # adverbs
+                                       (r'.*s$', 'NNS'),                  # plural nouns
+                                       (r'.*ing$', 'VBG'),                # gerunds
+                                       (r'.*ed$', 'VBD'),                 # past tense verbs
+                                       (r'.*', 'NN')                      # nouns (default)
+                                       ],backoff=nn_tagger)
+    at2 = nltk.AffixTagger(train, backoff=regexp_tagger)
+    ut3 = nltk.UnigramTagger(train, backoff=at2)
+    ct2 = nltk.NgramTagger(2, train, backoff=ut3)
+    print "evaluate bigram(unigram(affix(regExp(default nn)))) Length split = " ,ct2.evaluate(test)
+    
+    #################################################################################################
+    #cycle of training-testing Third case - Stratified split 90%-10% according to the sentence genre#
+    #################################################################################################
+    classes = divideToGenereClasses()
+    train, test = stratifiedSamples(classes, 10)
+
+    nn_tagger = nltk.DefaultTagger('NN')
+    regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
+                                       (r'(The|the|A|a|An|an)$', 'AT'),   # articles
+                                       (r'.*able$', 'JJ'),                # adjectives
+                                       (r'.*ness$', 'NN'),                # nouns formed from adjectives
+                                       (r'.*ly$', 'RB'),                  # adverbs
+                                       (r'.*s$', 'NNS'),                  # plural nouns
+                                       (r'.*ing$', 'VBG'),                # gerunds
+                                       (r'.*ed$', 'VBD'),                 # past tense verbs
+                                       (r'.*', 'NN')                      # nouns (default)
+                                       ],backoff=nn_tagger)
+    at2 = nltk.AffixTagger(train, backoff=regexp_tagger)
+    ut3 = nltk.UnigramTagger(train, backoff=at2)
+    ct2 = nltk.NgramTagger(2, train, backoff=ut3)
+    print "evaluate bigram(unigram(affix(regExp(default nn)))) Genere split = " ,ct2.evaluate(test)
+    
 </pre>
 The results We observe:<br>
+The output we got is:<br>
+evaluate bigram(unigram(affix(regExp(default nn)))) Random Split=  0.930047121632<br>
+evaluate bigram(unigram(affix(regExp(default nn)))) Length split =  0.931354488294<br>
+evaluate bigram(unigram(affix(regExp(default nn)))) Genere split =  0.955118403959<br>
+we can see that when we use the length split and the genere split it's effect the results of the teggar,<br>
+the results actually are better and we can say that the splitting is improving the tagger.<br>
+
 
 <BR> 
 <HR>
