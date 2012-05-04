@@ -1,11 +1,7 @@
 import  nltk
 from nltk.corpus import brown
 import numpy as np
-import re, yaml 
 from nltk.probability import FreqDist, ConditionalFreqDist 
-from nltk.classify.naivebayes import NaiveBayesClassifier
-from nltk.tag.sequential import  SequentialBackoffTagger
-from nltk.featstruct import FeatDict
     
 class SimpleUnigramTagger (nltk.TaggerI): 
     
@@ -37,15 +33,10 @@ class SimpleUnigramTagger (nltk.TaggerI):
         for tagger in self._taggers: 
             tag = tagger.choose_tag(tokens, index, history) 
             if tag is not None:  break 
-            else: 
-                if self._get_backoff() is not None: 
-                    return self._get_backoff().tag_one(tokens, index, history)
         return tag 
  
     def choose_tag(self, tokens, index, history):
-        w = tokens[index]
-        cf =  self._cfd[w]
-        return cf.max()
+        return self._cfd[tokens[index]].max()
 
 def optimize_parameter():
     brown_news_tagged = brown.tagged_sents(categories='news')

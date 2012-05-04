@@ -4,10 +4,10 @@ import pylab
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
     
-#Write a function that plots the number of words having a given number of tags. 
+#function that plots the number of words having a given number of tags. 
 #The X-axis should show the number of tags and 
 #the Y-axis the number of words having exactly this number of tags.
-#corpus can be the tagged_words according to what is most convenient
+#corpus - tagged_words
 def PlotNumberOfTags(corpus):
     fd1 = nltk.FreqDist(corpus)
     difCouples = fd1.keys()
@@ -85,11 +85,11 @@ def Plot3DCorrelation(tagWords):
            
 def main():
     tagWords =  brown.tagged_words(categories='news')
-    PlotNumberOfTags(tagWords)
+#    PlotNumberOfTags(tagWords)
     Plot3DCorrelation(tagWords)
-    cfd = MostAmbiguousWords(tagWords, 1)
-    TestMostAmbiguousWords(cfd, 4)
-    ShowExamples('the', cfd, tagWords)
+#    cfd = MostAmbiguousWords(tagWords, 3)
+#    TestMostAmbiguousWords(cfd, 3)
+#    ShowExamples('the', cfd, tagWords)
     
 if __name__ == '__main__':
     main() 
