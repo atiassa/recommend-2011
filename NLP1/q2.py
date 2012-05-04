@@ -38,6 +38,8 @@ class SimpleUnigramTagger (nltk.TaggerI):
     def choose_tag(self, tokens, index, history):
         return self._cfd[tokens[index]].max()
 
+# try fo find the best cutoff parameter to tagger eith entropy
+# run over the development words  
 def optimize_parameter():
     brown_news_tagged = brown.tagged_sents(categories='news')
     brown_train = brown_news_tagged[:int(0.8*len(brown_news_tagged))]
@@ -47,16 +49,17 @@ def optimize_parameter():
     opt_cut_of = 0
     best_accu = 0
     
-    for cut_off in range(0,19):
+    for cut_off in range(0,10):
         affix_tagger = nltk.AffixTagger(brown_train ,backoff=None , cutoff=cut_off)
         accu = 100.0 * affix_tagger.evaluate(brown_development)
-        print accu
         if  accu > best_accu :
             best_accu = accu
             opt_cut_of = cut_off
-    print opt_cut_of
     return opt_cut_of
 
+# return entropy like the formula H(x) = sum(P(xi)*log(P(xi)))
+# tag_ probd - the P(xi) for all tags 
+# tl - list of tags   
 def _H(self, tl, tag_probs):
     ans = 0
     for t in tl:
@@ -99,7 +102,7 @@ def _train(self, tagged_corpus, cutoff=0, verbose=False):
             useful_contexts_after_filter.remove(context)
             continue
         most_high[context] = h
-#    print most_high.keys()
+    print most_high.keys()
     # Build the context_to_tag table -- for each context, figure
     # out what the most likely tag is.  
     for context in useful_contexts_after_filter:
@@ -126,14 +129,16 @@ def main():
     affix_tagger = nltk.AffixTagger(brown_train, backoff= nltk.DefaultTagger('NN') , cutoff=2)
     nltk.AffixTagger._train = _train
     nltk.AffixTagger.H = _H
-    affix_tagger2 = nltk.AffixTagger(brown_train, backoff= nltk.DefaultTagger('NN') , cutoff=2)
-#    optimize_parameter()
+    optcutoff = optimize_parameter()
+    print "the optimal cutoff param is: %d " % optcutoff 
+    affix_tagger2 = nltk.AffixTagger(brown_train, backoff= nltk.DefaultTagger('NN') , cutoff=optcutoff)
+
 #    nn_tagger = nltk.DefaultTagger('NN')
 #    ut2 = nltk.UnigramTagger(brown_train, backoff=nn_tagger)
 ##    simpleUnigramTagger = SimpleUnigramTagger(brown_train)
 ##    print simpleUnigramTagger.tag(nltk.tag.untag(brown_test[0]))
     print 'Unigram tagger accuracy: %4.1f%%' % ( 100.0 * affix_tagger.evaluate(brown_test))
-    print 'Unigram tagger with backoff accuracy: %4.1f%%' % ( 100.0 * affix_tagger2.evaluate(brown_test))
+    print 'Unigram tagger accuracy with entropy: %4.1f%%' % ( 100.0 * affix_tagger2.evaluate(brown_test))
         
 if __name__ == '__main__':
     main() 
