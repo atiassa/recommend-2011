@@ -25,12 +25,12 @@ def main():
     #ca45 => first human tagged file
     #ca46 => second human tagged file
     #ca47 => automatic tagger tagged file
-#    dif1 = s.Compare_files('ca45', 'ca46') #compare 2 human taggs
-#    dif2 = s.Compare_files('ca47', 'ca45') #compare first human taggs to auto tagger
-#    dif3 = s.Compare_files('ca47', 'ca46') #compare second human taggs to auto tagger
-#    s.write_differences_to_dif_file(dif1, 'Dif2Human.txt')
-#    s.write_differences_to_dif_file(dif2, 'DifFirstHumanToAuto.txt')
-#    s.write_differences_to_dif_file(dif3, 'DifSecondtHumanToAuto.txt')
+    dif1 = s.Compare_files('ca45', 'ca46') #compare 2 human taggs
+    dif2 = s.Compare_files('ca47', 'ca45') #compare first human taggs to auto tagger
+    dif3 = s.Compare_files('ca47', 'ca46') #compare second human taggs to auto tagger
+    s.write_differences_to_dif_file(dif1, 'Dif2Human.txt')
+    s.write_differences_to_dif_file(dif2, 'DifFirstHumanToAuto.txt')
+    s.write_differences_to_dif_file(dif3, 'DifSecondtHumanToAuto.txt')
     
     print "end"
            
