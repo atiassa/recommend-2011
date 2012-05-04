@@ -186,13 +186,23 @@ def checkSimplifiedDifficultTags(taggerName, x):
     tags = ['ADJ', 'ADV', 'CNJ', 'DET', 'EX', 'FW', 'MOD', 'N', 'NP', 'NUM', 'PRO', 'P', 'TO', 'UH', 'V', 'VD', 'VG', 'VN', 'WH']
     return getDifficultTags(tagger, testCorpus, x, tags)
 
-#######################################################
+###################
+#get full tagsSet.#
+###################
+def getFullTagsList():
+    ans = []
+    brown_news_tagged = brown.tagged_sents()
+    for sen in brown_news_tagged:
+        for w,t in sen:
+            if not ans.__contains__(t):
+                ans.append(t)
+    return ans
+    
 #######################################################
 #Check which X tags are difficult in the full tagsSet.#
 #######################################################
-#######################################################
 def checkFullDifficultTags(tagger, testCorpus, x):
-    tags = []
+    tags = getFullTagsList()
     return getDifficultTags(tagger, testCorpus, x, tags)
 
 def main():
