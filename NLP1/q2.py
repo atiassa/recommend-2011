@@ -120,6 +120,18 @@ def _train(self, tagged_corpus, cutoff=0, verbose=False):
         
 
 def main():
+    # run Simple unigram tagger
+    brown_news_tagged = brown.tagged_sents(categories='news')
+    brown_train = brown_news_tagged[100:]
+    brown_test = brown_news_tagged[:100]
+
+    nn_tagger = nltk.DefaultTagger('NN')
+    ut2 = nltk.UnigramTagger(brown_train, backoff=nn_tagger)
+    simpleUnigramTagger = SimpleUnigramTagger(brown_train, backoff=nn_tagger)
+    print 'Simple Unigram tagger accuracy: %4.1f%%' % ( 100.0 * simpleUnigramTagger.evaluate(brown_test))
+    print 'Unigram tagger accuracy: %4.1f%%' % ( 100.0 * ut2.evaluate(brown_test))
+
+    # run affix tagger with entropy
     brown_news_tagged = brown.tagged_sents(categories='news')
     brown_train = brown_news_tagged[:int(0.8*len(brown_news_tagged))]
     rest = brown_news_tagged[int(0.8*len(brown_news_tagged)):]
@@ -133,10 +145,6 @@ def main():
     print "the optimal cutoff param is: %d " % optcutoff 
     affix_tagger2 = nltk.AffixTagger(brown_train, backoff= nltk.DefaultTagger('NN') , cutoff=optcutoff)
 
-#    nn_tagger = nltk.DefaultTagger('NN')
-#    ut2 = nltk.UnigramTagger(brown_train, backoff=nn_tagger)
-##    simpleUnigramTagger = SimpleUnigramTagger(brown_train)
-##    print simpleUnigramTagger.tag(nltk.tag.untag(brown_test[0]))
     print 'Unigram tagger accuracy: %4.1f%%' % ( 100.0 * affix_tagger.evaluate(brown_test))
     print 'Unigram tagger accuracy with entropy: %4.1f%%' % ( 100.0 * affix_tagger2.evaluate(brown_test))
         
