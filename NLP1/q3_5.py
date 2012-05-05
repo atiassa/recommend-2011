@@ -20,6 +20,7 @@ def getDistSentByLength():
     pylab.grid(True)
     pylab.show()
 
+#list of tagged sentences for all corpus (all categories)
 def getAllTaggedCorpus():
     taggedSens = []
     cats = brown.categories()
@@ -27,7 +28,10 @@ def getAllTaggedCorpus():
         for sen in brown.tagged_sents(categories=cat):
             taggedSens.append(sen)
     return taggedSens
-        
+
+#function the divide the tagged sentences to length classes 
+#return a list of classes -> each class is a list of tagged sentences  
+#on the HTML we wrote an explanation why we divide the classes like this(<20, >=20 and <=40, >40)       
 def divideToLengthClasses(cat='All'):
     shortC = []
     mediumC = []
@@ -46,7 +50,22 @@ def divideToLengthClasses(cat='All'):
             else:
                 longC.append(sen)
     return [shortC, mediumC, longC]
-    
+
+#function the divide the tagged sentences to genere classes 
+#return a list of classes -> each class is a list of tagged sentences        
+def divideToGenereClasses():
+    classes = []
+    taggedSentences = []
+    cats = brown.categories()
+    for cat in cats:
+        for sen in brown.tagged_sents(categories=cat):
+            taggedSentences.append(sen)
+        classes.append(taggedSentences)
+    return classes
+
+#method that construct a stratified dataset given the classes. 
+#The method should return 2 values: the training subset and the test subset, 
+#each stratified according to the classes.    
 def stratifiedSamples(classes, N):
     testSet = []
     trainSet = []
@@ -58,17 +77,7 @@ def stratifiedSamples(classes, N):
             noSenTest -= 1
         trainSet = trainSet + cl
     return trainSet, testSet
-        
-def divideToGenereClasses():
-    classes = []
-    taggedSentences = []
-    cats = brown.categories()
-    for cat in cats:
-        for sen in brown.tagged_sents(categories=cat):
-            taggedSentences.append(sen)
-        classes.append(taggedSentences)
-    return classes
-    
+
 def main():
     #ploting the distribution graph
 #    getDistSentByLength()

@@ -3,6 +3,7 @@ from itertools import izip
 from nltk.corpus import brown
 from operator import itemgetter
 
+#computes for the tagger Avg of F-measure.
 def MicroEvaluate(self,corpus_test):
     tagged_sents = self.batch_tag([nltk.untag(sent) for sent in corpus_test])#tagger tagged
     testTokens = sum(corpus_test,[]) # real tags from the corpus
@@ -19,7 +20,7 @@ def MicroEvaluate(self,corpus_test):
         return 0
     return fmeasure / len(tags)
 
-#tag both in the test and by the tagger
+#calc TP (tag both in the test and by the tagger)
 def calcTP(tag, CorpusTags, TaggerTags):
     tp = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -28,7 +29,7 @@ def calcTP(tag, CorpusTags, TaggerTags):
             tp += 1
     return tp
 
-#non-tag both in the test and by the tagger    
+#calc TN (non-tag both in the test and by the tagger)    
 def calcTN(tag, CorpusTags, TaggerTags):
     tn = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -38,7 +39,7 @@ def calcTN(tag, CorpusTags, TaggerTags):
             tn += 1
     return tn
     
-#non-tag by the test and tag by the tagger
+#calc FP (non-tag by the test and tag by the tagger)
 def calcFP(tag, CorpusTags, TaggerTags):
     fp = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -48,7 +49,7 @@ def calcFP(tag, CorpusTags, TaggerTags):
             fp += 1
     return fp
 
-#tag by the test and non tag by the tagger
+#calc FN (tag by the test and non tag by the tagger)
 def calcFN(tag, CorpusTags, TaggerTags):
     fn = 0
     for x, y in izip(CorpusTags, TaggerTags):
@@ -58,7 +59,7 @@ def calcFN(tag, CorpusTags, TaggerTags):
             fn += 1
     return fn
     
-#Precision(T) = TP / TP + FP
+#calc Precision(T) = TP / TP + FP
 def calcPrec(tag, CorpusTags, TaggerTags):
     tp = calcTP(tag, CorpusTags, TaggerTags)
     fp = calcFP(tag, CorpusTags, TaggerTags)
@@ -68,7 +69,7 @@ def calcPrec(tag, CorpusTags, TaggerTags):
         prec = float(float(tp)/(tp+fp))
     return prec
 
-#Recall(T) = TP / TP + FN    
+#calc Recall(T) = TP / TP + FN    
 def calcRecall(tag, CorpusTags, TaggerTags):
     tp = calcTP(tag, CorpusTags, TaggerTags)
     fn = calcFN(tag, CorpusTags, TaggerTags)
@@ -78,7 +79,7 @@ def calcRecall(tag, CorpusTags, TaggerTags):
         recall = float(float(tp)/(tp+fn))
     return recall
     
-#F-Measure(T) = 2 x Precision x Recall / (Recall + Precision)  
+#calc F-Measure(T) = 2 x Precision x Recall / (Recall + Precision)  
 def calcFMeasur(tag, CorpusTags, TaggerTags):
     prec = calcPrec(tag, CorpusTags, TaggerTags)
     recall = calcRecall(tag, CorpusTags, TaggerTags)
