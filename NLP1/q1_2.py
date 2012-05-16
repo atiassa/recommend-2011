@@ -13,7 +13,7 @@ def PlotNumberOfTags(corpus):
     fd2 = nltk.FreqDist(words)
     cfd = nltk.ConditionalFreqDist((fd2[word], word) for word in fd2.keys())
     
-    tags_n = pylab.arange(15)
+    tags_n = pylab.arange(1,19)
     perfs = [cfd[n].__len__() for n in tags_n]
     pylab.plot(tags_n, perfs)
     pylab.title('The number of words having a given number of tags')
