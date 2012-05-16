@@ -6,14 +6,14 @@ from nltk.corpus import brown
 # each time withholding one subset of 10% for testing and training on the other 9 subsets.
 # return the results of the accuracy as a table with rows: i (iteration number), accuracy(i) 
 # and accuracy averaged over the ten experiments as tuple 
-def crossValidate(corpus, n):
+def crossValidate(corpus, test_precent):
     summarize = []
     corpus_len = len(corpus)
+    cut = int((test_precent/100.0)*corpus_len)
     mean = 0
-    for i in range(1,n):
-        cut = int(i*0.1*corpus_len)
-        train = corpus[:cut]
-        test = corpus[cut:]
+    for i in range(0,corpus_len/cut):
+        test = corpus[i*cut:cut*(i+1)]
+        train = corpus[:i*cut]+corpus[cut*(i+1):]
         
         nn_tagger = nltk.DefaultTagger('NN')
         regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
@@ -33,7 +33,7 @@ def crossValidate(corpus, n):
         accu = float(ct2.evaluate(test))
         summarize.append((i,accu))
         mean += accu
-    return (summarize , mean/accu)
+    return (summarize , mean/(corpus_len/cut))
 
 def main():
     brown_news_tagged = brown.tagged_sents(categories='news')

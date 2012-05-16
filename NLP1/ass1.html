@@ -971,14 +971,14 @@ from nltk.corpus import brown
 # each time withholding one subset of 10% for testing and training on the other 9 subsets.
 # return the results of the accuracy as a table with rows: i (iteration number), accuracy(i) 
 # and accuracy averaged over the ten experiments as tuple 
-def crossValidate(corpus, n):
+def crossValidate(corpus, test_precent):
     summarize = []
     corpus_len = len(corpus)
+    cut = int((test_precent/100.0)*corpus_len)
     mean = 0
-    for i in range(1,n):
-        cut = int(i*0.1*corpus_len)
-        train = corpus[:cut]
-        test = corpus[cut:]
+    for i in range(0,corpus_len/cut):
+        test = corpus[i*cut:cut*(i+1)]
+        train = corpus[:i*cut]+corpus[cut*(i+1):]
         
         nn_tagger = nltk.DefaultTagger('NN')
         regexp_tagger = nltk.RegexpTagger([(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
@@ -998,7 +998,7 @@ def crossValidate(corpus, n):
         accu = float(ct2.evaluate(test))
         summarize.append((i,accu))
         mean += accu
-    return (summarize , mean/accu)
+    return (summarize , mean/(corpus_len/cut))
 
 def main():
     brown_news_tagged = brown.tagged_sents(categories='news')
@@ -1014,10 +1014,10 @@ Implement a method crossValidate(corpus, n) for trainable taggers.  Report the 1
 the last tagger discussed in class.  Discuss the results:<br>
 The results: <br>
     accuracy table:<br>
-    [(1, 0.7854381802181154), (2, 0.8069191969636437), (3, 0.8309586506298484), (4, 0.8460526099330449), <br>
-     (5, 0.8565380904562191), (6, 0.8631057484794977), (7, 0.8718763909200737), (8, 0.8748012910063105),<br> 
-     (9, 0.8831854878899631)] <br>
-    accuracy mean: 8 <br>
+    [(0, 0.8966156699119147), (1, 0.8885557738033703), (2, 0.8468651559800833), (3, 0.8648763400912854),<br>
+     (4, 0.8727200239210605), (5, 0.8754255958341678), (6, 0.8653310477823013), (7, 0.8836575509820506),<br>
+     (8, 0.8774696224839996), (9, 0.8832248372558839)] <br>
+    accuracy mean: 0.875474 <br>
 as you see - the accuracy is raising as the train go bigger <br>
 - and it was expected cause the tagger learn from the train, <br>
 so he "knows" more as the train go bigger.<br>
