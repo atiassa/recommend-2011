@@ -2,6 +2,7 @@ import  nltk
 from nltk.corpus import brown
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 # a function that will draw a 3D plot with axes for:
 # Word length (in characters)
@@ -22,13 +23,14 @@ def Plot3DCorrelation(tagWords):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.plot( word_frequency ,word_ambiguity ,word_length)
     ax.set_title('Correlation between word size or frequency and ambiguity level')
     ax.set_xlabel('Word frequency')
     ax.set_ylabel('Word ambiguity')
     ax.set_zlabel('Word length')
+    ax.scatter( word_frequency ,  word_ambiguity ,word_length,  c='b')
+    
     plt.show()
-           
+    
 def main():
     tagWords =  brown.tagged_words(categories='news')
     Plot3DCorrelation(tagWords)
