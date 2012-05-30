@@ -5,10 +5,14 @@ import math
 
 def generateDataset(N, f, sigma):
     x =np.linspace(0.0, 1.0, num=N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
-    def ti(xi): return f(xi) + np.random.normal(0.0, sigma, 1) 
+    c =np.random.normal(0.0, sigma, 1)
+    def ti(xi): return f(xi) + np.random.normal(0.0, sigma, 1)[0] 
     vti = np.vectorize(ti)
     t = vti(x)
     return (x,t)
+
+def Y(w,x):
+    return [sum([wk*(math.pow(xi,k)) for k,wk in enumerate(w)])  for xi in x]
 
 def least_squares(w,x,t):
     return 0.5*sum([math.pow(sum([wk*(math.pow(xi,k)) for k,wk in enumerate(w)]) - ti , 2) for xi,ti in zip(x,t)])
@@ -31,21 +35,26 @@ def OptimizeLS(x, t, M):
     W_LS.shape
     return W_LS
 
-def makeSinPlot(x,t):
-    y = np.sin(x)
+def makeSinPlot(x,t,f):
+    vf = np.vectorize(f)
+    y = vf(x)
     fig = plt.figure()
     wls1 = OptimizeLS(x, t, 1)
-    w1 = [sum([wk*(math.pow(xi,k)) for k,wk in enumerate(wls1)])  for xi in x]
+    w1 = Y(wls1,x)
     wls3 = OptimizeLS(x, t, 3)
-    w3 = [sum([wk*(math.pow(xi,k)) for k,wk in enumerate(wls3)])  for xi in x]
+    w3 = Y(wls3,x)
     wls5 = OptimizeLS(x, t, 5)
-    w5 = [sum([wk*(math.pow(xi,k)) for k,wk in enumerate(wls5)])  for xi in x]
+    w5 = Y(wls5,x)
     wls10 = OptimizeLS(x, t, 10)
-    w10 = [sum([wk*(math.pow(xi,k)) for k,wk in enumerate(wls10)])  for xi in x]
-    plt.plot(x,w1,'r--')
-    plt.plot(x,w3,'b--')
-    plt.plot(x,w5,'y--')
-    plt.plot(x,w10,'g--')
+    w10 = Y(wls10,x)
+    print y
+    print w1
+    print w3
+    print w5
+    plt.plot(x,w1,'r-')
+    plt.plot(x,w3,'b-')
+    plt.plot(x,w5,'y-')
+#    plt.plot(x,w10,'g--')
     plt.plot(x,y,'k-')
     plt.show()
     
@@ -54,15 +63,16 @@ def main():
     N = 10
     f = math.sin
     (x,t) = generateDataset(N, f, 0.03);
-#    makeSinPlot(x,t)
-#    print least_squares(OptimizeLS(x, t, 1),x,t)
-#    print least_squares(OptimizeLS(x, t, 3),x,t)
-#    print least_squares(OptimizeLS(x, t, 5),x,t)
-#    print least_squares(OptimizeLS(x, t, 10),x,t)
-    print OptimizeLS(x, t, 1)
-    print OptimizeLS(x, t, 3)
-    print OptimizeLS(x, t, 5)
-    print OptimizeLS(x, t, 10)
+#    makeSinPlot(x,t,f)
+    print least_squares(OptimizeLS(x, t, 1),x,t)
+    print least_squares(OptimizeLS(x, t, 3),x,t)
+    print least_squares(OptimizeLS(x, t, 5),x,t)
+    print least_squares(OptimizeLS(x, t, 10),x,t)
+#    print OptimizeLS(x, t, 0)
+#    print OptimizeLS(x, t, 1)
+#    print OptimizeLS(x, t, 3)
+#    print OptimizeLS(x, t, 5)
+#    print OptimizeLS(x, t, 10)
     
 if __name__ == '__main__':
     main() 
