@@ -4,9 +4,7 @@ import numpy as np
 
 def generateDataset(N, f, sigma):
     x =np.linspace(0.0, 1.0, num=N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
-    def ti(xi): return f(xi) + np.random.normal(0.0, sigma, 1)[0] 
-    vti = np.vectorize(ti)
-    t = vti(x)
+    t = [f(xi) + np.random.normal(0.0, sigma, 1)[0] for xi in x]
     return (x,t)
 
 def makePlot(N, f, x, t):

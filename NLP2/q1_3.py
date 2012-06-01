@@ -37,21 +37,14 @@ def normalized_error(w,x,t):
 # according the least squares objective
 def optimizePLS(x, t, M, lamda):
     design_matrix = np.array([np.array([math.pow(xi,m) for m in np.arange(M+1)]) for xi in x])  # This is A
-    design_matrix.shape # This is a NxM matrix
     #    A is a matrix of dimension NxM, W is a vector of dimension M and t is a vector of dimension N.)
     #    W_PLS = ((AT*A) + lambda*I)^-1 * AT*t
-    t.shape                                            # This is a vector of dim N  
     prod = np.dot(design_matrix.T, design_matrix)      # prod is (AT*A)
-    prod.shape
-    id = np.array([np.linspace(0,0, M+1) for j in np.arange(M+1)])
-    for j in np.arange(M+1): id[j][j] = lamda          # id is lamda*I
-    s = prod + id                                      # s is (AT*A) + lamda*I)
+    lamdaI = lamda *np.eye(M+1)         # id is lamda*I
+    s = prod + lamdaI                                    # s is (AT*A) + lamda*I)
     i = np.linalg.inv(s)                               # i is (AT*A) + lamda*I)^-1
-    i.shape
     m = np.dot(i, design_matrix.T)                     # m is ((AT*A) + lamda*I))*AT
-    m.shape
     W_PLS = np.dot(m, t)                               # w is ((AT*A) + lamda*I))*AT*t
-    W_PLS.shape
     return W_PLS
 
 def optimize_PLS(xt, tt, xv, tv, M):
