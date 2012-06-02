@@ -7,6 +7,7 @@ import numpy as np
 import math
 import random
 from itertools import izip
+from nltk.probability import FreqDist
 
 from nltk.classify import NaiveBayesClassifier as classifier
 from nltk.evaluate import accuracy, precision, recall, f_measure
@@ -15,10 +16,7 @@ from nltk.evaluate import accuracy, precision, recall, f_measure
 
 
 class q2_1(object):
-    # return a dictionary with all different words that apear in the document with the value True for each word  
-    def bag_of_words(self,document):
-        return dict([(word, True) for word in document])
-    
+        
     #split to train and test one list of documents names
     def randomChoosDocs(self,documents, numDocs, label):
         train = []
@@ -51,10 +49,10 @@ class q2_1(object):
         return trainSet, testSet
     
     #return the test docs with the lables the classifier gives after training
-    def classifyTest(self,test, classifier):
+    def classifyTest(self,test, classifier, feature_extractor):
         testClassifies = []
         for doc,lbl in test:
-            tmpLbl = classifier.classify(self.bag_of_words(movie_reviews.words(fileids=[doc])))
+            tmpLbl = classifier.classify(feature_extractor(movie_reviews.words(fileids=[doc])))
             x = (doc,tmpLbl)
             testClassifies.append(x)
         return testClassifies
@@ -134,10 +132,10 @@ class q2_1(object):
         self.maintrain, self.maintest = self.stratifiedSplit(self.negative, self.positive, N)
         lst = []
         for doc,lbl in self.maintrain:
-            x = (self.bag_of_words(movie_reviews.words(fileids=[doc])),lbl)
+            x = (feature_extractor(movie_reviews.words(fileids=[doc])),lbl)
             lst.append(x)
         nb = classifier.train(lst)
-        self.testClassify = self.classifyTest(self.maintest, nb)
+        self.testClassify = self.classifyTest(self.maintest, nb, feature_extractor)
         print "accuracy = ", accuracy(self.maintest, self.testClassify)
         print "Negative:"
         print "    precision = ", self.calcPrec('neg', self.maintest, self.testClassify)
@@ -150,9 +148,43 @@ class q2_1(object):
         nb.show_most_informative_features()
         return nb
     
+    #return a list of document's names that the classifier predicted wrong label
+    def error_prediction_docs(self, testSet, testClassify):
+        ans = []
+        for real,predict in izip(testSet, testClassify):
+            if real != predict:
+                realDoc, realLbl = real
+                predDoc, predLbl = predict
+                if predDoc == realDoc and realLbl != predLbl:
+                    ans.append(realDoc)
+        return ans
+          
+    #return k worst errors made by the classifier by returning the features that involved in many wrong decisions 
+    #using the mainTest and testClassify parameters
+    def worst_errors_many_wrong_decisions(self, k, feature_extractor):
+        worst_errors = []
+        features = []
+        wrongDocs = self.error_prediction_docs(self.maintest, self.testClassify)
+        for doc in wrongDocs:
+            feature_dic = feature_extractor(movie_reviews.words(fileids=[doc]))
+            features = features + feature_dic.keys()
+        fd = FreqDist(feature.lower() for feature in features)
+        for i in range(1, k+1):
+            x = fd.max()
+            fd.pop(x)
+            worst_errors.append(x)
+        return worst_errors
+    
+# return a dictionary with all different words that apear in the document with the value True for each word  
+def bag_of_words(document):
+    return dict([(word, True) for word in document])
+        
 def main():
     s = q2_1()
-    nbClassifier = s.evaluate_features(1,2.0)
+    nbClassifier = s.evaluate_features(bag_of_words,2.0)
+    #k features that involved in many wrong decisions
+    errors = s.worst_errors_many_wrong_decisions(10, bag_of_words)
+    print "10 features that involved in many wrong decisions: ", errors
     
 if __name__ == '__main__':
     main() 

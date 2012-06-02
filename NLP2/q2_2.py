@@ -1,19 +1,18 @@
-import  nltk
-from nltk.corpus import brown, movie_reviews
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
-from q2_1 import q2_1
+from nltk.corpus import movie_reviews
+from q2_1 import q2_1, bag_of_words
 import pylab
+from nltk.evaluate import accuracy as _accuracy
+from itertools import izip
 
 class q2_2(object):
     #constructing classifier for N=2 using task 1 and return the classifier and the train and test sets for this classifier
-    def build_Classifier_Train_Test(self):
-        q21 = q2_1()
-        classifier = q21.evaluate_features(1, 2)
-        train = q21.maintrain
-        test = q21.maintest
-        return classifier,train,test
+    def build_Classifier_Train_Test(self, feature_extractor):
+        self.q21 = q2_1()
+        classifier = self.q21.evaluate_features(feature_extractor, 2)
+        train = self.q21.maintrain
+        test = self.q21.maintest
+        testClaassify = self.q21.testClassify
+        return classifier,train,test, testClaassify
     
     #given a document name and list of words that apear in the train set 
     #return the percentage of unknown words in the given document
@@ -26,8 +25,7 @@ class q2_2(object):
     def test_unknown_words(self, test, train):
         ans = []
         trainWords = []
-        for doc,lbl in train:
-            
+        for doc,lbl in train:    
             tmp = movie_reviews.words(fileids=[doc])
             trainWords = trainWords + list(tmp)
         for doc,lbl in test:
@@ -112,20 +110,69 @@ class q2_2(object):
         pylab.grid(False)
         pylab.show()
         #negative
-        pylab.title('Percentage of Positive Documents')
+        pylab.title('Percentage of Negative Documents')
         pylab.xlabel('Groups')
         pylab.ylabel('Percentage - Negative')
         pylab.bar(x, y_neg, width=0.1, facecolor='blue', align='center')
         pylab.grid(False)
         pylab.show()
         return
+
+    # gets list of lists of file's names belonging to 5 groups, the test set and the test classify by the classifier
+    # and calculate accuracy, precision, recall and f-measure for each group
+    def calculateAccuracyPrecRecall(self, groups, test, testClassify):
+        accuracy = []
+        precPos = []
+        precNeg = []
+        recallPos = []
+        recallNeg = []
+        groupTest = []
+        groupTestClassify = []
+        for group in groups:
+            for doc in group:
+                for element1, element2 in izip(test, testClassify):
+                    tdoc,tlbl = element1
+                    if tdoc == doc:
+                        groupTest.append(element1)
+                        groupTestClassify.append(element2)
+            p = self.q21.calcPrec('pos',groupTest,groupTestClassify)
+            precPos.append(p)
+            p = self.q21.calcPrec('neg',groupTest,groupTestClassify)
+            precNeg.append(p)
+            r = self.q21.calcRecall('pos', groupTest, groupTestClassify)
+            recallPos.append(r)
+            r = self.q21.calcRecall('neg', groupTest,groupTestClassify)
+            recallNeg.append(r)
+            a = _accuracy(groupTest, groupTestClassify)
+            accuracy.append(a)
+            groupTest = []
+            groupTestClassify = []
+        return precPos, precNeg, recallPos, recallNeg, accuracy
+    
+    #ploting the calculation graphs for each group
+    def plot_calculations(self,y, ylbl, strTitle):
+        x = [1,2,3,4,5]
+        pylab.bar(x, y, width=0.1, facecolor='blue', align='center')
+        pylab.xlabel('Groups')
+        pylab.ylabel(ylbl)
+        pylab.title(strTitle)
+        pylab.grid(False)
+        pylab.show()
+        return
     
 def main():
     q22 = q2_2()
-    c,train,test = q22.build_Classifier_Train_Test()
+    c,train,test,testClassify = q22.build_Classifier_Train_Test(bag_of_words)
     groups = q22.divide_test(test, train)
     q22.plotSizes(groups)
     q22.plot_positive_negative_relative_no(groups)
+    precPos, precNeg, recallPos, recallNeg , accuracy = q22.calculateAccuracyPrecRecall(groups, test, testClassify)
+    q22.plot_calculations(precPos, 'Precision', 'Positive Precision for each Group')
+    q22.plot_calculations(precNeg, 'Precision', 'Negative Precision for each Group')
+    q22.plot_calculations(recallPos, 'Recall', 'Positive Recall for each Group')
+    q22.plot_calculations(recallNeg, 'Recall', 'Negative Recall for each Group')
+    q22.plot_calculations(accuracy, 'accuracy', 'Accuracy for each Group')
+    
     
 if __name__ == '__main__':
     main() 
