@@ -65,7 +65,6 @@ namespace MarkovDecisionProcess
             int i = 0;
             do
             {
-                Console.WriteLine("cupdates = " + cUpdates);
                 stop = true;
                 i++;
                 Dictionary<State, double> Vi = new Dictionary<State, double>();
@@ -73,12 +72,11 @@ namespace MarkovDecisionProcess
                 foreach (State s in m_dDomain.States)
                 {
                     ViByS[i].Add(s,calcMaxVal(i,s));
+                    cUpdates++;
                     if (stop && Math.Abs(ViByS[i][s] - ViByS[i-1][s]) > dEpsilon)
                         stop = false;
-                    cUpdates++;
                 }
             } while (!stop);
-            Console.WriteLine("Finished value iteration");
 
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished value iteration");
@@ -89,7 +87,7 @@ namespace MarkovDecisionProcess
         {
             bool first = true;
             double max = 0;
-            double tmp, sum,sss;
+            double tmp, sum;
             foreach (Action a in m_dDomain.Actions)
             {
                 // clac formula for action a
@@ -98,17 +96,8 @@ namespace MarkovDecisionProcess
                 else
                 {
                     sum = 0;
-                    foreach (State stag in m_dDomain.States)
-                    {
-                        //if ((sss = getSum(s, a, stag)) == 0)
-                        //{   
-                        //    sss = s.TransitionProbability(a, stag);
-                        //    setSum(s, a,stag, sss);
-                        //    s.TransitionProbability(a, stag);
-                        //}
-                        //sum +=  sss * ViByS[i-1][stag];
-                        sum += s.TransitionProbability(a, stag) *ViByS[i - 1][stag]; 
-                    }
+                    foreach (State stag in s.Successors(a))
+                         sum += s.TransitionProbability(a, stag) *ViByS[i - 1][stag]; 
                     tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
                 }
 
@@ -123,53 +112,7 @@ namespace MarkovDecisionProcess
             return max;
         }
 
-        private void setSum(State s, Action a, State stag, double sum)
-        {
-            if (sums.ContainsKey(stag))
-            {
-                if (sums[stag].ContainsKey(s))
-                {
-                    if (!sums[stag][s].ContainsKey(a))
-                        sums[stag][s].Add(a, sum);
-                    else if (sums[stag][s][a] != sum)
-                            Console.WriteLine("not good");
-                }
-                else
-                {
-                    Dictionary<Action, double> sa = new Dictionary<Action, double>();
-                    sa.Add(a, sum);
-                    sums[stag].Add(s, sa);
-                }
-            }
-            else
-            {
-                Dictionary<State, Dictionary<Action, double>> iss = new Dictionary<State,Dictionary<Action,double>>();
-                Dictionary<Action, double> sa = new Dictionary<Action, double>();
-                sa.Add(a,sum);
-                iss.Add(s,sa);
-                sums.Add(stag, iss);
-            }
-        }
-
-        private double getSum(State s, Action a, State stag)
-        {
-            if (sums.ContainsKey(stag))
-                if (sums[stag].ContainsKey(s))
-                    if (sums[stag][s].ContainsKey(a))
-                        return sums[stag][s][a];
-            return 0;
-        }
-
-		public void LearningQ(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
-        {
-            Debug.WriteLine("Starting learning-q");
-            DateTime dtBefore = DateTime.Now;
-            cUpdates = 0;
-            Application.DoEvents();
-            //your code here
-            tsExecutionTime = DateTime.Now - dtBefore;
-            Debug.WriteLine("\nFinished learning-q");
-        }
+     
 		
 	    public void Sarsa(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
         {
