@@ -4,19 +4,16 @@ import scipy.linalg
 import math
 
 def  generateDataset3(N, f, sigma):
-    x =np.linspace(0.0, 1.0, num=N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
-    def ti(xi): return f(xi) + np.random.normal(0.0, sigma, 1)[0] 
-    vti = np.vectorize(ti)
-#    np.random.shuffle(x)
-    x1 = np.array(x) 
-    tts = vti(x)
-#    np.random.shuffle(x)
-    x2 = np.array(x)
-    tv = vti(x)
-#    np.random.shuffle(x)
-    x3 = np.array(x)
-    ttr = vti(x)
-    return ((x,tts),(x,tv),(x,ttr))
+    x =np.linspace(0.0, 1.0, num=3*N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
+    pairs = [(xi, f(xi) + np.random.normal(0.0, sigma, 1)[0]) for xi in x]
+    np.random.shuffle(x) 
+    test = pairs[:N]
+    train = pairs[N:N*2]
+    dev =pairs[N*2:]
+    xts , tts = zip(*test)
+    xtr , ttr = zip(*train)
+    xdv , tdv = zip(*dev)
+    return ((xts,tts),(xtr,ttr),(xdv,tdv))
 
 # y(x) = w0 + w1x + w2x^2 + ... + wMx^M
 def Y(w,x):
@@ -76,12 +73,12 @@ def normalized_errorPlot(xt, tt, xv, tv, M):
     
 def main():
     N = 10
-    f = math.sin
+    def f(x): return math.sin(2*math.pi*x)
     a = generateDataset3(N, f, 0.03);
     (xts,tts) = a[0]
-    (xv,tv) = a[1]
-    (xtr,ttr) = a[2]
-    normalized_errorPlot(xtr, ttr, xv, tv, 10)
+    (xtr,ttr) = a[1]
+    (xdv,tdv) = a[2]
+    optimize_PLS(xtr, ttr, xdv, tdv, 10)
 #    optimize_PLS(xtr, ttr, xv, tv, 3)
 #    makeSinPlot(x,t,f)
 #    print "E(w1) =  %.8f" % least_squares(OptimizeLS(x, t, 1),x,t)

@@ -46,32 +46,38 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 
+# return a tuple with the 2 vectors x and t
+# where the xi values are equi-distant on the [0,1] segment (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
+# and t is ti = y(xi) + Normal(mu, sigma)
 def generateDataset(N, f, sigma):
     x =np.linspace(0.0, 1.0, num=N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
     t = [f(xi) + np.random.normal(0.0, sigma, 1)[0] for xi in x]
     return (x,t)
 
-def makePlot(N, f, x, t):
+def makePlot(N, f, x, t, sigma):
     vf = np.vectorize(f)
-    y = vf(x)
-    sizes = [40,50,70]
+    xx = np.linspace(0.0, 1.0, num=100)
+    y = vf(xx)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.scatter(x,t, s=sizes,marker = '.', facecolor='red' )
-    plt.plot(x,y)
+    ax.scatter(x,t, s=50,marker= 'o',edgecolors ='blue', facecolor='none' )
+    plt.plot(xx,y,lw=1,color= 'g')
+    plt.title('sigma = %.2f' % sigma)
     plt.show()
- 
  
 def main():
     N = 50
-    f = math.sin
-    (x,t) = generateDataset(N, f, 0.03);
-    makePlot(N, f, x, t)
+    sigma = 00.3
+    def f(x):
+        return math.sin(2*math.pi*x)
+    (x,t) = generateDataset(N, f,sigma);
+    makePlot(N, f, x, t , sigma)
     
 if __name__ == '__main__':
-    main()   
+    main()    
 </pre>
-<img src="q1_1.PNG" width="600" height="480" />
+<img src="q1_1a.PNG" width="600" height="480" />
+<img src="q1_1b.PNG" width="600" height="480" />
 
 <a name="curvefitting"></a>
 <h3>Q1.2 Polynomial Curve Fitting</h3>
@@ -81,14 +87,17 @@ import matplotlib.pyplot as plt
 import scipy.linalg
 import math
 
+# return a tuple with the 2 vectors x and t
+# where the xi values are equi-distant on the [0,1] segment (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
+# and t is ti = y(xi) + Normal(mu, sigma)
 def generateDataset(N, f, sigma):
     x =np.linspace(0.0, 1.0, num=N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
-    t = [f(xi) + np.random.normal(0.0, sigma, 1)[0] for xi in x]
+    t = [f(xi) + np.random.normal(0.0, sigma) for xi in x]
     return (x,t)
 
 # y(x) = w0 + w1x + w2x^2 + ... + wMx^M
 def Y(w,x):
-    return [sum([wk*(math.pow(xi,k)) for k,wk in enumerate(w)])  for xi in x]
+    return sum([wk*(math.pow(x,k)) for k,wk in enumerate(w)])
 
 # E(w) = 0.5*sum(y(xi) - ti)^2 = 0.5*sum(sum(wk*xi^k) - ti)^2
 def least_squares(w,x,t):
@@ -99,42 +108,42 @@ def least_squares(w,x,t):
 #    W_LS = ((AT*A)^-1)*AT*t
 #    A is a matrix of dimension NxM, W is a vector of dimension M and t is a vector of dimension N.)
 def OptimizeLS(x, t, M):
-    design_matrix = np.array([np.array([math.pow(xi,m) for m in np.arange(M+1)]) for xi in x])  # This is A
+    design_matrix = np.array([[math.pow(xi,m) for m in np.arange(M+1)] for xi in x])  # This is A
     prod = np.dot(design_matrix.T, design_matrix)      # prod is (AT*A)
-    i = np.linalg.inv(prod)                            # i is (AT*A)^-1)
-    m = np.dot(i, design_matrix.T)                     # m is ((AT*A)^-1)*AT
-    W_LS = np.dot(m, t)                                # w is ((AT*A)^-1)*AT*t
+    i = np.linalg.inv(prod)                            # i is (prod^-1)
+    m = np.dot(i, design_matrix.T)                     # m is (i*AT)
+    W_LS = np.dot(m, t)                                # w is (m*t)
     return W_LS
 
-def makeSinPlot(x,t,f,M,c):
+def makeSinPlot(x,t,f,M):
+    xy =np.linspace(0.0, 1.0, num=100)
     vf = np.vectorize(f)
-    y = vf(x)
+    y = vf(xy)
     fig = plt.figure()
     wls = OptimizeLS(x, t, M)
-    w = Y(wls,x)
-    sizes = [40,50,70]
+    w = [Y(wls,xi) for xi in xy]
     ax = fig.add_subplot(111)
-    ax.scatter(x,t, s=sizes,marker = '.', facecolor='red' )
+    ax.scatter(x,t, s=50,marker = 'o', edgecolors ='blue' , facecolor='none' )
     plt.title('M = %d' % M)
-    plt.plot(x,w,c)
-    plt.plot(x,y,'k-')
+    plt.plot(xy,w,'r-')
+    plt.plot(xy,y,'g-')
     plt.show()
     
 def main():
     N = 10
-    f = math.sin
+    def f(x): return math.sin(2*math.pi*x)
     (x,t) = generateDataset(N, f, 0.03);
-    makeSinPlot(x,t,f,1,'r-')
-    makeSinPlot(x,t,f,3,'y-')
-    makeSinPlot(x,t,f,5,'g-')
-    makeSinPlot(x,t,f,9,'b-')
+    makeSinPlot(x,t,f,1)
+    makeSinPlot(x,t,f,3)
+    makeSinPlot(x,t,f,5)
+    makeSinPlot(x,t,f,9)
     print "E(w1) =  %.8f" % least_squares(OptimizeLS(x, t, 1),x,t)
     print "E(w3) =  %.8f" % least_squares(OptimizeLS(x, t, 3),x,t)
     print "E(w5) =  %.8f" % least_squares(OptimizeLS(x, t, 5),x,t)
     print "E(w9) =  %.8f" % least_squares(OptimizeLS(x, t, 9),x,t)
     
 if __name__ == '__main__':
-    main()  
+    main()   
 </pre>
 <img src="q1_2a.PNG" width="600" height="480" />
 <img src="q1_2b.PNG" width="600" height="480" />
@@ -142,10 +151,10 @@ if __name__ == '__main__':
 <img src="q1_2d.PNG" width="600" height="480" />
 <br>
 Least Squares Error:<br> 
-E(w1) =  0.00376178<br>
-E(w3) =  0.00160914<br>
-E(w5) =  0.00147821<br>
-E(w9) =  0.00000047<br>
+E(w1) =  1.34335743<br>
+E(w3) =  0.03495009<br>
+E(w5) =  0.00070755<br>
+E(w9) =  0.00000015<br>
 <b>So M=9 is the best and it overfitting to sin(x)</b>
 
 <a name="regularization"></a>
@@ -153,6 +162,82 @@ E(w9) =  0.00000047<br>
 
 <a name="q1_4"></a>
 <h3>Q1.4 Probabilistic Regression Framework</h3>
+
+<pre>
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.linalg
+import math
+
+# return a tuple with the 2 vectors x and t
+# where the xi values are equi-distant on the [0,1] segment (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
+# and t is ti = y(xi) + Normal(mu, sigma)
+def generateDataset(N, f, sigma):
+    x =np.linspace(0.0, 1.0, num=N) # (that is, x1 = 0, x2=1/N-1, x3=2/N-1..., xN = 1.0)
+    t = [f(xi) + np.random.normal(0.0, sigma, 1)[0] for xi in x]
+    return (x,t)
+
+# return Q(x) = (Q0(x) ... QM(x))T = (1 x x^2 x^3 ... x^M)^T
+def phi(x,M):
+    fi = np.matrix([math.pow(x, i) for i in np.arange(0,M+1)])
+    return fi.T 
+
+def bayesianEstimator(X, t, M, alpha, sigma2):
+    I = np.eye(M+1)          
+    B = (1.0/sigma2)
+    S = np.linalg.inv(alpha*I + B*sum([np.dot(phi(xn,M),phi(xn,M).T) for xn in X]))
+    def m(x):
+        su = sum([np.dot(phi(xn,M), tn) for xn,tn in zip(X,t)])
+        Ssum = np.dot(S,su)
+        BxTs = B * np.dot(phi(x,M).T, Ssum)
+        r = BxTs.item(0)
+        return  r
+    def var(x):
+        phix = phi(x,M)
+        phiTS = np.dot(phix.T,S)
+        return sigma2 + np.dot(phiTS, phix) 
+    return (m, var)
+
+def drawPlot(xt, t, f, m, var):
+    x = np.linspace(0.0, 1.0, num=100)
+    vf = np.vectorize(f)
+    vm = np.vectorize(m)
+    vvar = np.vectorize(var)
+    y = vf(x)
+    ym = vm(x)
+    yvar = vvar(x)
+    yvar2 = [math.pow(yvi,0.5) for yvi in yvar]
+    yvarup = y + yvar2
+    yvardown = y - yvar2
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(xt,t, s=50,marker= 'o',edgecolors ='blue', facecolor='none' )
+    plt.plot(x,y,lw=2,color= 'green')
+    plt.plot(x,ym,lw=2,color= 'red')
+    plt.plot(x,yvarup,lw=1,color= 'red',alpha=0.3)
+    plt.plot(x,yvardown,lw=1,color= 'red',alpha=0.3)
+    plt.title('N = %d' % len(t))
+    plt.show()
+
+def run(N):
+    def f(x): return math.sin(2*math.pi*x)
+    (x,t) = generateDataset(N, f, 0.03);
+    alpha = 0.005
+    sigma2 = 1/11.1
+    M = 9 
+    (m,var) = bayesianEstimator(x, t, M, alpha, sigma2)
+    drawPlot(x, t, f, m, var)
+
+def main():    
+    run(10)
+    run(100)
+    
+if __name__ == '__main__':
+    main() 
+</pre>
+<img src="q1_4a.PNG" width="600" height="480" />
+<img src="q1_4b.PNG" width="600" height="480" />
+<br>
 
 <a name="q1_5"></a>
 <h3>Q1.5 Use Bayesian estimation to produce an interval estimation of the function y</h3>
