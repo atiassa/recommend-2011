@@ -17,7 +17,7 @@ namespace MarkovDecisionProcess
         public double MinValue { get; private set; }
 
         private Dictionary<int, Dictionary<State, double>> ViByS;
-        private Dictionary<State, Dictionary<State, Dictionary<Action, double>>> sums;
+        private Dictionary<State, Action> ViBySActions;
 
         public ValueFunction(Domain d)
         {
@@ -27,8 +27,7 @@ namespace MarkovDecisionProcess
             MinValue = 0.0;
 
             ViByS = new Dictionary<int, Dictionary<State, double>>();
-            initV0();
-            sums = new Dictionary<State, Dictionary<State, Dictionary<Action, double>>>();
+            ViBySActions = new  Dictionary<State, Action>();
         }
 
         // init all V0(s) to 0
@@ -36,7 +35,10 @@ namespace MarkovDecisionProcess
         {
             Dictionary<State, double> tmpD = new Dictionary<State, double>();
             foreach (State s in m_dDomain.States)
+            {
                 tmpD.Add(s, 0.0);
+                ViBySActions.Add(s, null);
+            }
             ViByS.Add(0, tmpD);
         }
 
@@ -50,8 +52,7 @@ namespace MarkovDecisionProcess
         public override Action GetAction(State s)
         {
             //your code here
-
-            return null;
+            return ViBySActions[s];
         }
 
         public void ValueIteration(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
@@ -61,6 +62,8 @@ namespace MarkovDecisionProcess
             cUpdates = 0;
 
             //your code here
+            initV0();
+
             bool stop = true;
             int i = 0;
             do
@@ -71,7 +74,7 @@ namespace MarkovDecisionProcess
                 ViByS.Add(i, Vi);
                 foreach (State s in m_dDomain.States)
                 {
-                    ViByS[i].Add(s,calcMaxVal(i,s));
+                    update(i,s);
                     cUpdates++;
                     if (stop && Math.Abs(ViByS[i][s] - ViByS[i-1][s]) > dEpsilon)
                         stop = false;
@@ -83,33 +86,34 @@ namespace MarkovDecisionProcess
         }
 
         // calc the formula for Vi(s)
-        private double calcMaxVal(int i,State s)
+        private void update(int i,State s)
         {
             bool first = true;
-            double max = 0;
-            double tmp, sum;
+            ViByS[i].Add(s, 0);
             foreach (Action a in m_dDomain.Actions)
             {
                 // clac formula for action a
-                if (i == 1)
-                    tmp = s.Reward(a);
-                else
+                double sum = 0;
+                if (i != 1)
                 {
-                    sum = 0;
                     foreach (State stag in s.Successors(a))
-                         sum += s.TransitionProbability(a, stag) *ViByS[i - 1][stag]; 
-                    tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
+                         sum += s.TransitionProbability(a, stag) *ViByS[i-1][stag]; 
                 }
+                double tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
 
                 // save max
                 if (first)
                 {
-                    max = tmp;
+                    ViByS[i][s] = tmp;
+                    ViBySActions[s] = a;
                     first = false;
                 }
-                else max = Math.Max(max, tmp); 
+                else if(ViByS[i][s] < tmp)
+                {
+                    ViByS[i][s] = Math.Max(ViByS[i][s], tmp);
+                    ViBySActions[s] = a;
+                }
             }
-            return max;
         }
 
      

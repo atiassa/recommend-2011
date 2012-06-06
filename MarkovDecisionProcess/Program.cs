@@ -16,11 +16,14 @@ namespace MarkovDecisionProcess
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Debug.Listeners.Add(new TextWriterTraceListener(fs));
 
-            RaceTrack rc = new RaceTrack("RaceTrack2.bmp");//change here to a different race BMP: 2 is very small, 3 is very large
-            RandomPolicy p = new RandomPolicy(rc);
+            RaceTrack rc = new RaceTrack("RaceTrack1.bmp");//change here to a different race BMP: 2 is very small, 3 is very large
+            //RandomPolicy p = new RandomPolicy(rc);
+            PolicyValueFunction p = new PolicyValueFunction(rc);
+            TimeSpan ts; int up;
+            p.PolicyIteration(0.5, out up,out ts);
             RaceViewer form = new RaceViewer(rc);
             form.Start();
-            //rc.DrawRace(p, form);
+            rc.DrawRace(p, form);
 
             ValueFunction vi1 = new ValueFunction(rc);
             ValueFunction vi2 = new ValueFunction(rc);
@@ -35,7 +38,7 @@ namespace MarkovDecisionProcess
             vi1.ValueIteration(0.5, out cUpdates1, out ts1);
 
             form.StateValues = vi2;
-            //vi2.PrioritizedValueIteration(0.5, out cUpdates2, out ts2);
+           // vi2.PrioritizedValueIteration(0.5, out cUpdates2, out ts2);
             rc.DrawRace(vi3, form);
 
             double dADR1 = rc.ComputeAverageDiscountedReward(vi1, 1000, 100);
