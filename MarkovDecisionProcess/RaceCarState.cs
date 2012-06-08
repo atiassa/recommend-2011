@@ -114,6 +114,8 @@ namespace MarkovDecisionProcess
             return 0.0;
         }
 
+
+
         public override double Reward(Action a)
         {
             if (m_rtTrack.IsRaceEnd(this))
