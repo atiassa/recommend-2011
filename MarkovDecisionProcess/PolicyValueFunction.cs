@@ -51,12 +51,11 @@ namespace MarkovDecisionProcess
 
             //your code here
             initV0();
-
             ValueFunction v = new ValueFunction(m_dDomain);
             TimeSpan t;
             int up;
             v.ValueIteration(dEpsilon, out up,out  t);
-            double maxDelta = 0, delta;
+            double maxDelta = Double.MinValue , delta;
             int i = 0;
             do
             {
@@ -78,28 +77,18 @@ namespace MarkovDecisionProcess
 
         private double update(State s, int i,ValueFunction v)
         {
-            bool first = true;
-            ViByS[i].Add(s, 0);
+            ViByS[i].Add(s, Double.MinValue);
             foreach (Action a in m_dDomain.Actions)
             {
                 double sum = 0;
-                if (i != 1)
-                {
-                    foreach (State stag in s.Successors(a))
-                        sum += s.TransitionProbability(a, stag) * ViByS[i - 1][stag];
-                }
+                foreach (State stag in s.Successors(a))
+                    sum += s.TransitionProbability(a, stag) * ViByS[i - 1][stag];
                 double tmp = s.Reward(v.GetAction(s)) + (m_dDomain.DiscountFactor * sum);
 
                // save max
-                if (first)
+                if(ViByS[i][s] < tmp)
                 {
                     ViByS[i][s] = tmp;
-                    ViBySActions[s] = a;
-                    first = false;
-                }
-                else if(ViByS[i][s] < tmp)
-                {
-                    ViByS[i][s] = Math.Max(ViByS[i][s], tmp);
                     ViBySActions[s] = a;
                 }
             }

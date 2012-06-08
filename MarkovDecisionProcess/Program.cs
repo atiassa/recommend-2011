@@ -16,7 +16,7 @@ namespace MarkovDecisionProcess
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Debug.Listeners.Add(new TextWriterTraceListener(fs));
 
-            RaceTrack rc = new RaceTrack("RaceTrack1.bmp");//change here to a different race BMP: 2 is very small, 3 is very large
+            RaceTrack rc = new RaceTrack("RaceTrack2.bmp");//change here to a different race BMP: 2 is very small, 3 is very large
             //RandomPolicy p = new RandomPolicy(rc);
             PolicyValueFunction p = new PolicyValueFunction(rc);
             TimeSpan ts; int up;

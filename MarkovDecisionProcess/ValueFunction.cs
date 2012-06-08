@@ -45,7 +45,7 @@ namespace MarkovDecisionProcess
         public double ValueAt(State s)
         {
             //your code here
-            return ViByS[ViByS.Count][s];
+            return ViByS[ViByS.Count-1][s];
         }
 
 
@@ -81,6 +81,7 @@ namespace MarkovDecisionProcess
                 }
             } while (!stop);
 
+            updatePI();
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished value iteration");
         }
@@ -88,35 +89,50 @@ namespace MarkovDecisionProcess
         // calc the formula for Vi(s)
         private void update(int i,State s)
         {
-            bool first = true;
-            ViByS[i].Add(s, 0);
+            ViByS[i].Add(s, Double.MinValue);
             foreach (Action a in m_dDomain.Actions)
             {
                 // clac formula for action a
                 double sum = 0;
-                if (i != 1)
-                {
-                    foreach (State stag in s.Successors(a))
-                         sum += s.TransitionProbability(a, stag) *ViByS[i-1][stag]; 
-                }
+                foreach (State stag in s.Successors(a))
+                        sum += s.TransitionProbability(a, stag) * ViByS[i-1][stag]; 
                 double tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
 
                 // save max
-                if (first)
-                {
-                    ViByS[i][s] = tmp;
-                    ViBySActions[s] = a;
-                    first = false;
-                }
-                else if(ViByS[i][s] < tmp)
-                {
-                    ViByS[i][s] = Math.Max(ViByS[i][s], tmp);
-                    ViBySActions[s] = a;
-                }
+                if(ViByS[i][s] < tmp)
+                       ViByS[i][s] = tmp;
             }
         }
 
-     
+        private void updatePI()
+        {
+            foreach (State s in m_dDomain.States)
+            {
+                bool first = true;
+                double max = 0;
+                foreach (Action a in m_dDomain.Actions)
+                {
+                    // clac formula for action a
+                    double sum = 0;
+                    foreach (State stag in s.Successors(a))
+                        sum += s.TransitionProbability(a, stag) * ViByS[ViByS.Count-1][stag];
+                    double tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
+
+                    // save max
+                    if (first)
+                    {
+                        max = tmp;
+                        ViBySActions[s] = a;
+                        first = false;
+                    }
+                    else if (max < tmp)
+                    {
+                        max = Math.Max(max, tmp);
+                        ViBySActions[s] = a;
+                    }
+                }
+            }
+        }
 		
 	    public void Sarsa(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
         {
