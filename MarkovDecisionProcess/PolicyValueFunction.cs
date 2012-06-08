@@ -16,7 +16,8 @@ namespace MarkovDecisionProcess
         public double MaxValue { get; private set; }
         public double MinValue { get; private set; }
 
-        private Dictionary<int, Dictionary<State, double>> ViByS;
+        private Dictionary<State, double> ViByS;
+        private Dictionary<State, double> Vi_1ByS;
         private Dictionary<State, Action> ViBySActions;
 
         public PolicyValueFunction(Domain d)
@@ -26,14 +27,15 @@ namespace MarkovDecisionProcess
             MaxValue = 0.0;
             MinValue = 0.0;
 
-            ViByS = new Dictionary<int, Dictionary<State, double>>();
+            ViByS = new Dictionary<State, double>();
+            Vi_1ByS = new Dictionary<State, double>();
             ViBySActions = new Dictionary<State, Action>();
         }
 
         public double ValueAt(State s)
         {
             //your code here
-            return ViByS[ViByS.Count][s];
+            return Vi_1ByS[s];
         }
 
 
@@ -51,61 +53,71 @@ namespace MarkovDecisionProcess
 
             //your code here
             initV0();
-            ValueFunction v = new ValueFunction(m_dDomain);
-            TimeSpan t;
-            int up;
-            v.ValueIteration(dEpsilon, out up,out  t);
+            //ValueFunction rp = new ValueFunction(m_dDomain);
+            //TimeSpan t;
+            //int up;
+            //rp.ValueIteration(dEpsilon, out up, out  t);
+            RandomPolicy rp = new RandomPolicy(m_dDomain);
             double maxDelta = Double.MinValue , delta;
             int i = 0;
             do
             {
                 i++;
-                Dictionary<State, double> Vi = new Dictionary<State, double>();
-                ViByS.Add(i, Vi);
                 foreach (State s in m_dDomain.States)
                 {
-                    delta = update(s,i,v);
+                    delta = update(s,i,rp);
                     cUpdates++;
-                    if (maxDelta < delta)
-                        maxDelta = delta;
+                    maxDelta = Math.Max(delta, maxDelta);
                 }
-            } while (maxDelta < dEpsilon);
+                ViByS = new Dictionary<State, double>(Vi_1ByS);
+            } while (maxDelta >= dEpsilon);
 
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished policy iteration");
         }
 
-        private double update(State s, int i,ValueFunction v)
+        private double update(State s, int i,Policy v)
         {
-            ViByS[i].Add(s, Double.MinValue);
+            bool first = true;
             foreach (Action a in m_dDomain.Actions)
             {
+                if (i == 1)
+                {
+                    Vi_1ByS[s] = s.Reward(v.GetAction(s));
+                    ViBySActions[s] = a;
+                    continue;
+                }
                 double sum = 0;
                 foreach (State stag in s.Successors(a))
-                    sum += s.TransitionProbability(a, stag) * ViByS[i - 1][stag];
+                    sum += s.TransitionProbability(a, stag) * ViByS[stag];
                 double tmp = s.Reward(v.GetAction(s)) + (m_dDomain.DiscountFactor * sum);
 
                // save max
-                if(ViByS[i][s] < tmp)
+                if (first)
                 {
-                    ViByS[i][s] = tmp;
+                    Vi_1ByS[s] = tmp;
+                    ViBySActions[s] = a;
+                    first = false;
+                }
+                else if(Vi_1ByS[s] < tmp)
+                {
+                    Vi_1ByS[s] = tmp;
                     ViBySActions[s] = a;
                 }
             }
             
-            return Math.Abs(ViByS[i][s] - ViByS[i - 1][s]);
+            return Math.Abs(Vi_1ByS[s] - ViByS[s]);
         }
 
         // init all V0(s) to 0
         private void initV0()
         {
-            Dictionary<State, double> tmpD = new Dictionary<State, double>();
             foreach (State s in m_dDomain.States)
             {
-                tmpD.Add(s, 0.0);
+                ViByS.Add(s, 0);
+                Vi_1ByS.Add(s, 0);
                 ViBySActions.Add(s, null);
             }
-            ViByS.Add(0, tmpD);
         }
 
     }   
