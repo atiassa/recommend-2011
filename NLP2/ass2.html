@@ -629,13 +629,74 @@ The entire Code for this task:</br>
 
 </pre>
 
-Compare the behavior of this new feature extractor with the baseline bag of words. 
+Compare the behavior of this new feature extractor with the baseline bag of words:</br>
+<li>bag of words extractor:<br/>
+accuracy =  0.675<br/>
+Negative:<br/>
+<table>
+<tr><td>precision</td><td>=</td><td>0.972972972973</td></tr>
+<tr><td>recall</td><td>=</td><td>0.36</td></tr>
+<tr><td>f measure</td><td>=</td><td>0.525547445255</td></tr>
+</table>
+Positive:<br/>
+<table>
+<tr><td>precision</td><td>=</td><td>0.60736196319</td></tr>
+<tr><td>recall</td><td>=</td><td>0.99</td></tr>
+<tr><td>f measure</td><td>=</td><td>0.752851711027</td></tr>
+</table>
+Most Informative Features:<br/>
+<table>
+<tr><td>ludicrous = True</td><td>neg : pos</td><td>=</td><td>21.7 : 1.0</td></tr>
+<tr><td>sucks = True</td><td>neg : pos</td><td>=</td><td>16.3 : 1.0</td></tr>
+<tr><td>fascination = True</td><td>pos : neg</td><td>=</td><td>11.0 : 1.0</td></tr>
+<tr><td>slip = True</td><td>pos : neg</td><td>=</td><td>11.0 : 1.0</td></tr>
+<tr><td>stupidity = True</td><td>neg : pos</td><td>=</td><td>10.6 : 1.0</td></tr>
+<tr><td>poignant = True</td><td>pos : neg</td><td>=</td><td>10.6 : 1.0</td></tr>
+<tr><td>hudson = True</td><td>neg : pos</td><td>=</td><td>10.3 : 1.0</td></tr>
+<tr><td>3000 = True</td><td>neg : pos</td><td>=</td><td>10.3 : 1.0</td></tr>
+<tr><td>captures = True</td><td>pos : neg</td><td>=</td><td>10.2 : 1.0</td></tr>
+<tr><td>outstanding = True</td><td>pos : neg</td><td>=</td><td>10.1 : 1.0</td></tr>
+</table>
+<br/>
+<li>top k frequent words without stop words extractor:<br/>
+accuracy =  0.715<br/>
+Negative:<br/>
+<table>
+<tr><td>precision</td><td>=</td><td>0.938775510204</td></tr>
+<tr><td>recall</td><td>=</td><td>0.46</td></tr>
+<tr><td>f measure</td><td>=</td><td>0.61744966443</td></tr>
+</table>
+Positive:<br/>
+<table>
+<tr><td>precision</td><td>=</td><td>0.64238410596</td></tr>
+<tr><td>recall</td><td>=</td><td>0.97</td></tr>
+<tr><td>f measure</td><td>=</td><td>0.772908366534</td></tr>
+</table>
+Most Informative Features:<br/>
+<table>
+<tr><td>ludicrous = True</td><td>neg : pos</td><td>=</td><td>23.0 : 1.0</td></tr>
+<tr><td>effortlessly = True</td><td>pos : neg</td><td>=</td><td>13.0 : 1.0</td></tr>
+<tr><td>avoids = True</td><td>pos : neg</td><td>=</td><td>12.3 : 1.0</td></tr>
+<tr><td>outstanding = True</td><td>pos : neg</td><td>=</td><td>11.9 : 1.0</td></tr>
 
+<tr><td>astounding = True</td><td>pos : neg</td><td>=</td><td>10.3 : 1.0</td></tr>
+<tr><td>fascination = True</td><td>pos : neg</td><td>=</td><td>10.3 : 1.0</td></tr>
+<tr><td>hudson = True</td><td>neg : pos</td><td>=</td><td>10.3 : 1.0</td></tr>
+<tr><td>sucks = True</td><td>neg : pos</td><td>=</td><td>10.2 : 1.0</td></tr>
+<tr><td>unoriginal = True</td><td>neg : pos</td><td>=</td><td>9.7 : 1.0</td></tr>
+<tr><td>conveys = True</td><td>pos : neg</td><td>=</td><td>9.7 : 1.0</td></tr>
+</table>
+</br>
+We can see that the new feature extractor have better results over the baseline feature extractor,
+also the most informative features in the new feature extractor includes words that imply the right label 
+like astounding that the meaning implies positive critics and not negative one, 
+and in the baseline extractor we have 3000 that actually don't imply any label.</br>
+<br/>
 Try to optimize the value of the parameter K to learn a good classifier. 
-
 Do you see a predictable behavior of the accuracy and other metrics of the classifier 
 as K varies as a function of the size of the total vocabulary in the training set W. 
 
+K = 
 Draw a plot of accuracy vs. K/W. 
 
 Identify documents which are classified differently by the 2 classifiers and report new_positives and new_negatives. 

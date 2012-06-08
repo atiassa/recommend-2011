@@ -1,22 +1,15 @@
-import  nltk
-import nltk.evaluate 
 from nltk.corpus import movie_reviews
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 import math
 import random
 from itertools import izip
 from nltk.probability import FreqDist
-
 from nltk.classify import NaiveBayesClassifier as classifier
-from nltk.evaluate import accuracy, precision, recall, f_measure
-#from nltk.classify.util import accuracy
-#from nltk.metrics import precision, recall
-
+from nltk.evaluate import accuracy
 
 class q2_1(object):
-        
+    i = 0  
+    W = 0
+    
     #split to train and test one list of documents names
     def randomChoosDocs(self,documents, numDocs, label):
         train = []
@@ -32,21 +25,25 @@ class q2_1(object):
         return train,test
     
     #performing the stratified split (training, test) dataset of (positive, negative) documents
-    def stratifiedSplit(self,negative, positive, N):
-        testSet = []
-        trainSet = []
-        percTrain = float(N-1)/float(N) # percent of how many documents should be in train set from each docs list
-        noTrainNeg = math.ceil(percTrain*len(negative))# round up
-        noTrainPos = math.ceil(percTrain*len(positive))# round up
-        #insert train and test random docs from negative list
-        tmptrain, tmptest = self.randomChoosDocs(negative, noTrainNeg,'neg')
-        trainSet = trainSet + tmptrain
-        testSet = testSet + tmptest
-        #insert train and test random docs from positive list
-        tmptrain, tmptest = self.randomChoosDocs(positive, noTrainPos,'pos')
-        trainSet = trainSet + tmptrain
-        testSet = testSet + tmptest
-        return trainSet, testSet
+    def stratifiedSplit(self,negative, positive, N): 
+        if q2_1.i == 0:
+            testSet = []
+            trainSet = []
+            percTrain = float(N-1)/float(N) # percent of how many documents should be in train set from each docs list
+            noTrainNeg = math.ceil(percTrain*len(negative))# round up
+            noTrainPos = math.ceil(percTrain*len(positive))# round up
+            #insert train and test random docs from negative list
+            tmptrain, tmptest = self.randomChoosDocs(negative, noTrainNeg,'neg')
+            trainSet = trainSet + tmptrain
+            testSet = testSet + tmptest
+            #insert train and test random docs from positive list
+            tmptrain, tmptest = self.randomChoosDocs(positive, noTrainPos,'pos')
+            trainSet = trainSet + tmptrain
+            testSet = testSet + tmptest
+            q2_1.i = 1
+            return trainSet, testSet
+        else:
+            return self.maintrain, self.maintest
     
     #return the test docs with the lables the classifier gives after training
     def classifyTest(self,test, classifier, feature_extractor):
@@ -131,9 +128,15 @@ class q2_1(object):
         self.positive = movie_reviews.fileids('pos') #list of all names of the documents under pos folder
         self.maintrain, self.maintest = self.stratifiedSplit(self.negative, self.positive, N)
         lst = []
+        trainvocabulary = []
         for doc,lbl in self.maintrain:
             x = (feature_extractor(movie_reviews.words(fileids=[doc])),lbl)
             lst.append(x)
+            trainvocabulary = trainvocabulary + x[0].keys()
+        trainvocabulary = set(trainvocabulary)
+#        if q2_1.W == 0:
+        q2_1.W = len(trainvocabulary)
+        print "no. of features in train:", self.W
         nb = classifier.train(lst)
         self.testClassify = self.classifyTest(self.maintest, nb, feature_extractor)
         print "accuracy = ", accuracy(self.maintest, self.testClassify)
