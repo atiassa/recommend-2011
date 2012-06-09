@@ -56,8 +56,8 @@ def plotGraph(q21, K):
         x.append(float(newK)/float(q21.W))
         acc = accuracy(q21.maintest, q21.testClassify)
         y.append(acc)
-    pylab.bar(x, y, width=0.1, facecolor='blue', align='center')
-    pylab.xlabel('K')
+    pylab.bar(x, y, width=0.02, facecolor='blue', align='center')
+    pylab.xlabel('K/W')
     pylab.ylabel("Accuracy")
     pylab.title("Accuracy for each K/W value")
     pylab.grid(False)
@@ -90,7 +90,7 @@ def main():
     print "No of documents that the classifier classify them as pos in bag of words extractor and neg in top k extractor is:", noNeg
     print "No of documents that the classifier classify them as neg in bag of words extractor and pos in top k extractor is:", noPos
     #drawing plot of accuract vs. K/W
-    plotGraph(q21, 1000)
+    plotGraph(q21, 5000)
     return
 
 if __name__ == '__main__':

@@ -134,8 +134,8 @@ class q2_1(object):
             lst.append(x)
             trainvocabulary = trainvocabulary + x[0].keys()
         trainvocabulary = set(trainvocabulary)
-#        if q2_1.W == 0:
-        q2_1.W = len(trainvocabulary)
+        if q2_1.W == 0:
+            q2_1.W = len(trainvocabulary)
         print "no. of features in train:", self.W
         nb = classifier.train(lst)
         self.testClassify = self.classifyTest(self.maintest, nb, feature_extractor)
