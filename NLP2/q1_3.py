@@ -65,14 +65,10 @@ def normalized_errorPlot(sets, M ):
         lamda = math.pow(math.e, i)
         w1 = optimizePLS(xtr, ttr, M, lamda)
         e = normalized_error(w1,xv,tv)
-#        val.append(e)
-#        e = normalized_error(w1,xtr,ttr)
-#        w2 = optimizePLS(xts, tts, M, lamda)
         train.append(e)    
         e = normalized_error(w1,xts,tts)
         test.append(e)
     plt.title('N = %d' % len(tv))
-#    plt.plot(x,val,lw=1,color= 'green')
     plt.plot(x,train,lw=1,color= 'blue')
     plt.plot(x,test,lw=1,color= 'red')
     plt.legend(( 'Train', 'Test'),'upper center', shadow=True)
@@ -103,9 +99,9 @@ def makeSinPlot(sets,f,M):
 def main():
     N = 10
     def f(x): return math.sin(2*math.pi*x)
-#    sets = generateDataset3(N, f, 0.03)
-#    normalized_errorPlot(sets, 9)
-#    makeSinPlot(sets,f,9)
+    sets = generateDataset3(N, f, 0.03)
+    normalized_errorPlot(sets, 9)
+    makeSinPlot(sets,f,9)
     N = 100
     sets = generateDataset3(N, f, 0.03)
     normalized_errorPlot(sets, 9)
