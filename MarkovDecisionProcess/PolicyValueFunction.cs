@@ -58,17 +58,19 @@ namespace MarkovDecisionProcess
             //int up;
             //rp.ValueIteration(dEpsilon, out up, out  t);
             RandomPolicy rp = new RandomPolicy(m_dDomain);
-            double maxDelta = Double.MinValue, delta;
+            double maxDelta , delta;
             int i = 0;
             do
             {
                 i++;
+                maxDelta = Double.MinValue;
                 foreach (State s in m_dDomain.States)
                 {
-                    delta = update(s, i, rp);
+                    delta = update(s,i,rp);
                     cUpdates++;
                     maxDelta = Math.Max(delta, maxDelta);
                 }
+                Console.WriteLine(maxDelta);
                 ViByS = new Dictionary<State, double>(Vi_1ByS);
             } while (maxDelta >= dEpsilon);
 
@@ -76,7 +78,7 @@ namespace MarkovDecisionProcess
             Debug.WriteLine("\nFinished policy iteration");
         }
 
-        private double update(State s, int i, Policy v)
+        private double update(State s, int i,Policy v)
         {
             bool first = true;
             foreach (Action a in m_dDomain.Actions)
@@ -90,22 +92,22 @@ namespace MarkovDecisionProcess
                 double sum = 0;
                 foreach (State stag in s.Successors(a))
                     sum += s.TransitionProbability(a, stag) * ViByS[stag];
-                double tmp = s.Reward(v.GetAction(s)) + (m_dDomain.DiscountFactor * sum);
+                double tmp = s.Reward(GetAction(s)) + (m_dDomain.DiscountFactor * sum);
 
-                // save max
+               // save max
                 if (first)
                 {
                     Vi_1ByS[s] = tmp;
                     ViBySActions[s] = a;
                     first = false;
                 }
-                else if (Vi_1ByS[s] < tmp)
+                else if(Vi_1ByS[s] < tmp)
                 {
                     Vi_1ByS[s] = tmp;
                     ViBySActions[s] = a;
                 }
             }
-
+            
             return Math.Abs(Vi_1ByS[s] - ViByS[s]);
         }
 
@@ -118,6 +120,5 @@ namespace MarkovDecisionProcess
                 Vi_1ByS.Add(s, 0);
                 ViBySActions.Add(s, null);
             }
-        }
-    }
+        }    }
 }

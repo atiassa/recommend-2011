@@ -19,6 +19,7 @@ namespace MarkovDecisionProcess
         private Dictionary<State, double> ViByS;
         private Dictionary<State, double> Vi_1ByS;
         private Dictionary<State, Action> ViBySActions;
+        private Dictionary<State ,Dictionary<Action, double>> Q;
 
         public ValueFunction(Domain d)
         {
@@ -30,6 +31,8 @@ namespace MarkovDecisionProcess
             ViByS = new Dictionary<State, double>();
             Vi_1ByS = new Dictionary<State, double>();
             ViBySActions = new Dictionary<State, Action>();
+
+            Q = new Dictionary<State, Dictionary<Action, double>>();
         }
 
         // init all V0(s) to 0
@@ -48,7 +51,6 @@ namespace MarkovDecisionProcess
             //your code here
             return Vi_1ByS[s];
         }
-
 
         public override Action GetAction(State s)
         {
@@ -72,21 +74,21 @@ namespace MarkovDecisionProcess
                 i++;
                 foreach (State s in m_dDomain.States)
                 {
-                    update(i, s);
+                    updateValueIter(i, s);
                     cUpdates++;
                     if (stop && Math.Abs(Vi_1ByS[s] - ViByS[s]) > dEpsilon)
                         stop = false;
                 }
                 ViByS = new Dictionary<State, double>(Vi_1ByS);
             } while (!stop);
+            updatePIValueIter();
 
-            updatePI();
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished value iteration");
         }
 
         // calc the formula for Vi+1(s)
-        private void update(int i, State s)
+        private void updateValueIter(int i, State s)
         {
             bool first = true;
             foreach (Action a in m_dDomain.Actions)
@@ -113,7 +115,7 @@ namespace MarkovDecisionProcess
             }
         }
 
-        private void updatePI()
+        private void updatePIValueIter()
         {
             foreach (State s in m_dDomain.States)
             {
@@ -149,9 +151,52 @@ namespace MarkovDecisionProcess
             DateTime dtBefore = DateTime.Now;
             cUpdates = 0;
             Application.DoEvents();
+            
             //your code here
+            initV0();
+            foreach(State s in m_dDomain.States){
+                Dictionary<Action , double> d = new Dictionary<Action,double>();
+                foreach (Action a in m_dDomain.Actions)
+                    d.Add(a, 0);
+                Q.Add(s, d);
+            }
+
+            State i = m_dDomain.StartState , j;
+            Action chosenA = null;
+            do
+            {
+                chosenA = findMaxQA(i);
+                j = i.Apply(chosenA);
+                double r = i.Reward(chosenA);
+                Q[i][chosenA] = dEpsilon*Q[i][chosenA] + (1 - dEpsilon)*(r + m_dDomain.DiscountFactor *Q[j][findMaxQA(j)]);
+                i = j;
+            } while (!m_dDomain.IsGoalState(i));
+            
+            setActions();
+
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished learning-q");
+        }
+
+        private void setActions()
+        {
+            foreach (State s in m_dDomain.States)
+                ViBySActions.Add(s, findMaxQA(s));
+        }
+
+        private Action findMaxQA(State j)
+        {
+            List<Action> actions = new List<Action>();
+            double maxQA = double.MinValue;
+            foreach (Action a in m_dDomain.Actions)
+            {
+                if (Q[j][a] > maxQA)
+                    maxQA = Q[j][a];
+                if (Q[j][a] == maxQA)
+                    actions.Add(a);
+            }
+            int idx = RandomGenerator.Next(actions.Count);
+            return actions[idx];
         }
 
         public void Sarsa(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
@@ -160,7 +205,25 @@ namespace MarkovDecisionProcess
             DateTime dtBefore = DateTime.Now;
             cUpdates = 0;
             Application.DoEvents();
+            
             //your code here
+            initV0();
+            RandomPolicy rn = new RandomPolicy(m_dDomain);
+            foreach (State s in m_dDomain.States)
+                ViBySActions[s] = rn.GetAction(s);
+            State i = m_dDomain.StartState, j;
+            Action chosenA = null;
+            do
+            {
+                chosenA = GetAction(i);
+                j = i.Apply(chosenA);
+                double r = i.Reward(chosenA);
+                ViByS[i] = dEpsilon * ViByS[i] + (1 - dEpsilon) * (r +  ViByS[j]);
+                i = j;
+            } while (!m_dDomain.IsGoalState(i));
+            
+            setActions();
+
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished SARSA");
         }
