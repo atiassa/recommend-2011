@@ -97,7 +97,7 @@ namespace MarkovDecisionProcess
                     sum += s.TransitionProbability(a, stag) * ViByS[stag];
                 double tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
                 // save max
-                if((tmp >= maxV) && (!s.Apply(a).Equals(s))){
+                if((tmp >= maxV)){
                     maxV = tmp;
                     maxA = a;
                 }
@@ -106,7 +106,7 @@ namespace MarkovDecisionProcess
             {
                 Vi_1ByS[s] = maxV;
                 ViBySActions[s] = maxA;
-                return Math.Abs(maxV - ViByS[s]);
+                return Math.Abs(Vi_1ByS[s] - ViByS[s]);
             }
             return 0;
         }
