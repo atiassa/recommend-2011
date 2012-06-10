@@ -83,7 +83,7 @@ namespace MarkovDecisionProcess
                 double tmp = s.Reward(a) + (m_dDomain.DiscountFactor * sum);
 
                // save max
-                if ((tmp > maxV) && (!s.Apply(a).Equals(s)))
+                if ((tmp >= maxV) && (!s.Apply(a).Equals(s)))
                 {
                     maxV = tmp;
                     maxA = a;
