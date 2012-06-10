@@ -17,7 +17,6 @@ namespace MarkovDecisionProcess
         public double MinValue { get; private set; }
 
         private Dictionary<State, double> ViByS;
-        private Dictionary<State, double> Vi_1ByS;
         private Dictionary<State, Action> ViBySActions;
 
         public PolicyValueFunction(Domain d)
@@ -28,14 +27,13 @@ namespace MarkovDecisionProcess
             MinValue = 0.0;
 
             ViByS = new Dictionary<State, double>();
-            Vi_1ByS = new Dictionary<State, double>();
             ViBySActions = new Dictionary<State, Action>();
         }
 
         public double ValueAt(State s)
         {
             //your code here
-            return Vi_1ByS[s];
+            return ViByS[s];
         }
 
 
@@ -52,73 +50,60 @@ namespace MarkovDecisionProcess
             cUpdates = 0;
 
             //your code here
+            double maxDelta, delta;
             initV0();
-            //ValueFunction rp = new ValueFunction(m_dDomain);
-            //TimeSpan t;
-            //int up;
-            //rp.ValueIteration(dEpsilon, out up, out  t);
             RandomPolicy rp = new RandomPolicy(m_dDomain);
-            double maxDelta , delta;
-            int i = 0;
+            foreach (State s in m_dDomain.States)
+                ViBySActions.Add(s, rp.GetAction(s));
             do
             {
-                i++;
                 maxDelta = Double.MinValue;
                 foreach (State s in m_dDomain.States)
                 {
-                    delta = update(s,i,rp);
+                    delta = update(s);
                     cUpdates++;
                     maxDelta = Math.Max(delta, maxDelta);
                 }
-                Console.WriteLine(maxDelta);
-                ViByS = new Dictionary<State, double>(Vi_1ByS);
+               // Console.WriteLine(maxDelta);
             } while (maxDelta >= dEpsilon);
 
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished policy iteration");
         }
 
-        private double update(State s, int i,Policy v)
+        private double update(State s)
         {
-            bool first = true;
+            double maxV = ViByS[s];
+            Action maxA = null;
             foreach (Action a in m_dDomain.Actions)
             {
-                if (i == 1)
-                {
-                    Vi_1ByS[s] = s.Reward(v.GetAction(s));
-                    ViBySActions[s] = a;
-                    continue;
-                }
                 double sum = 0;
                 foreach (State stag in s.Successors(a))
                     sum += s.TransitionProbability(a, stag) * ViByS[stag];
-                double tmp = s.Reward(GetAction(s)) + (m_dDomain.DiscountFactor * sum);
+                double tmp = s.Reward(a) + (m_dDomain.DiscountFactor * sum);
 
                // save max
-                if (first)
+                if ((tmp > maxV) && (!s.Apply(a).Equals(s)))
                 {
-                    Vi_1ByS[s] = tmp;
-                    ViBySActions[s] = a;
-                    first = false;
-                }
-                else if(Vi_1ByS[s] < tmp)
-                {
-                    Vi_1ByS[s] = tmp;
-                    ViBySActions[s] = a;
+                    maxV = tmp;
+                    maxA = a;
                 }
             }
-            
-            return Math.Abs(Vi_1ByS[s] - ViByS[s]);
+            if (maxA != null)
+            {
+                double delta = maxV - ViByS[s];
+                ViByS[s] = maxV;
+                ViBySActions[s] = maxA;
+                return Math.Abs(delta);
+            }
+            return 0;
         }
 
         // init all V0(s) to 0
         private void initV0()
         {
             foreach (State s in m_dDomain.States)
-            {
                 ViByS.Add(s, 0);
-                Vi_1ByS.Add(s, 0);
-                ViBySActions.Add(s, null);
-            }
-        }    }
+        }    
+    }
 }
