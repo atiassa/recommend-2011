@@ -66,83 +66,49 @@ namespace MarkovDecisionProcess
 
             //your code here
             initV0();
-            bool stop = true;
-            int i = 0;
+            double delta, maxDelta;
             do
             {
-                stop = true;
-                i++;
+                maxDelta = Double.MinValue;
                 foreach (State s in m_dDomain.States)
                 {
-                    updateValueIter(i, s);
+                    delta = updateValueIter(s);
                     cUpdates++;
-                    if (stop && Math.Abs(Vi_1ByS[s] - ViByS[s]) > dEpsilon)
-                        stop = false;
+                    maxDelta = Math.Max(delta, maxDelta);
                 }
+                Console.WriteLine(maxDelta);
                 ViByS = new Dictionary<State, double>(Vi_1ByS);
-            } while (!stop);
-            updatePIValueIter();
+            } while (maxDelta >= dEpsilon);
 
             tsExecutionTime = DateTime.Now - dtBefore;
             Debug.WriteLine("\nFinished value iteration");
         }
 
         // calc the formula for Vi+1(s)
-        private void updateValueIter(int i, State s)
+        private double updateValueIter(State s)
         {
-            bool first = true;
+            double maxV = Double.MinValue;
+            Action maxA = null;
             foreach (Action a in m_dDomain.Actions)
             {
-                if (i == 1)
-                {
-                    Vi_1ByS[s] = s.Reward(a);
-                    continue;
-                }
-
                 // clac formula for action a
                 double sum = 0;
                 foreach (State stag in s.Successors(a))
                     sum += s.TransitionProbability(a, stag) * ViByS[stag];
                 double tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
-
                 // save max
-                if (first)
-                {
-                    Vi_1ByS[s] = tmp;
-                    first = false;
+                if((tmp >= maxV) && (!s.Apply(a).Equals(s))){
+                    maxV = tmp;
+                    maxA = a;
                 }
-                else Vi_1ByS[s] = Math.Max(tmp, ViByS[s]);
             }
-        }
-
-        private void updatePIValueIter()
-        {
-            foreach (State s in m_dDomain.States)
+            if (maxA != null)
             {
-                bool first = true;
-                double max = 0;
-                foreach (Action a in m_dDomain.Actions)
-                {
-                    // clac formula for action a
-                    double sum = 0;
-                    foreach (State stag in s.Successors(a))
-                        sum += s.TransitionProbability(a, stag) * Vi_1ByS[stag];
-                    double tmp = s.Reward(a) + m_dDomain.DiscountFactor * sum;
-
-                    // save max
-                    if (first)
-                    {
-                        max = tmp;
-                        ViBySActions[s] = a;
-                        first = false;
-                    }
-                    else if (max < tmp)
-                    {
-                        max = tmp;
-                        ViBySActions[s] = a;
-                    }
-                }
+                Vi_1ByS[s] = maxV;
+                ViBySActions[s] = maxA;
+                return Math.Abs(maxV - ViByS[s]);
             }
+            return 0;
         }
 
         public void LearningQ(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
