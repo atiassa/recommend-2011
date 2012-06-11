@@ -163,7 +163,7 @@ class q2_1(object):
         return ans
           
     #return k worst errors made by the classifier by returning the features that involved in many wrong decisions 
-    #using the mainTest and testClassify parameters
+    #using the mainTest and testClassify class parameters
     def worst_errors_many_wrong_decisions(self, k, feature_extractor):
         worst_errors = []
         features = []

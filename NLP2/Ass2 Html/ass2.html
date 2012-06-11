@@ -368,14 +368,20 @@ def bag_of_words(document):
 
 <br>The evaluate_features function:</br>
 <pre>
-def evaluate_features(self,feature_extractor, N):
+    def evaluate_features(self,feature_extractor, N):
         self.negative = movie_reviews.fileids('neg') #list of all names of the documents under neg folder
         self.positive = movie_reviews.fileids('pos') #list of all names of the documents under pos folder
         self.maintrain, self.maintest = self.stratifiedSplit(self.negative, self.positive, N)
         lst = []
+        trainvocabulary = []
         for doc,lbl in self.maintrain:
             x = (feature_extractor(movie_reviews.words(fileids=[doc])),lbl)
             lst.append(x)
+            trainvocabulary = trainvocabulary + x[0].keys()
+        trainvocabulary = set(trainvocabulary)
+        if q2_1.W == 0:
+            q2_1.W = len(trainvocabulary)
+        print "no. of features in train:", self.W
         nb = classifier.train(lst)
         self.testClassify = self.classifyTest(self.maintest, nb, feature_extractor)
         print "accuracy = ", accuracy(self.maintest, self.testClassify)
@@ -390,17 +396,265 @@ def evaluate_features(self,feature_extractor, N):
         nb.show_most_informative_features()
         return nb
 </pre>
-<br>we used some helping functions here like:</br>
+<br>we used some helping functions here like (the implementation of this functions is at the end of this task):</br>
 <br><li>stratifiedSplit: gets the negative and positive documents names as 2 lists and N,
 and split the documents in the lists like this: the train set have N-1\N docs from positive and negative list,
 and the test set gets the rest (1/N).</br>
 <br><li>calcPrec, calcRecall, calcFMeasure - taken from the previous assignment for calculating precision,F Measure and recall.</br>
 <br>Error Analysis:</br>
-<br>TODO</br>
+<br>10 features that involved in many wrong decisions:  [',', '.', 'and', 'the', 'to', 'a', 'in', 'is', 'of', 'that']</br>
+<br>We think that is better to think about worst errors as features that apear many times in prediction errors and not features with bad odds because 
+if a feature has bad odds there is a chance it will get the right label and when we looked on all the documents that classified with wrong labels we 
+know for sure that these features could cause the classifier to predict the wrong label.</br>
+</br>
+The function that predict the worst errors:</br>
+<pre>
+	#return a list of document's names that the classifier predicted wrong label
+    def error_prediction_docs(self, testSet, testClassify):
+        ans = []
+        for real,predict in izip(testSet, testClassify):
+            if real != predict:
+                realDoc, realLbl = real
+                predDoc, predLbl = predict
+                if predDoc == realDoc and realLbl != predLbl:
+                    ans.append(realDoc)
+        return ans
+          
+    #return k worst errors made by the classifier by returning the features that involved in many wrong decisions 
+    #using the mainTest and testClassify  class parameters
+    def worst_errors_many_wrong_decisions(self, k, feature_extractor):
+        worst_errors = []
+        features = []
+        wrongDocs = self.error_prediction_docs(self.maintest, self.testClassify)
+        for doc in wrongDocs:
+            feature_dic = feature_extractor(movie_reviews.words(fileids=[doc]))
+            features = features + feature_dic.keys()
+        fd = FreqDist(feature.lower() for feature in features)
+        for i in range(1, k+1):
+            x = fd.max()
+            fd.pop(x)
+            worst_errors.append(x)
+        return worst_errors
+</pre>
 <br>The Entire code for this task:<br/>
 <pre>
+from nltk.corpus import movie_reviews
+import math
+import random
+from itertools import izip
+from nltk.probability import FreqDist
+from nltk.classify import NaiveBayesClassifier as classifier
+from nltk.evaluate import accuracy
 
+class q2_1(object):
+    i = 0  
+    W = 0
+    
+    #split to train and test one list of documents names
+    def randomChoosDocs(self,documents, numDocs, label):
+        train = []
+        test = []
+        tmpNum = 0
+        while tmpNum < numDocs:
+            r = int(random.uniform(1,len(documents)-1))
+            train.append((documents.pop(r),label))
+            tmpNum = tmpNum + 1
+        for doc in documents:
+            x = (doc,label)
+            test.append(x)
+        return train,test
+    
+    #performing the stratified split (training, test) dataset of (positive, negative) documents
+    def stratifiedSplit(self,negative, positive, N): 
+        if q2_1.i == 0:
+            testSet = []
+            trainSet = []
+            percTrain = float(N-1)/float(N) # percent of how many documents should be in train set from each docs list
+            noTrainNeg = math.ceil(percTrain*len(negative))# round up
+            noTrainPos = math.ceil(percTrain*len(positive))# round up
+            #insert train and test random docs from negative list
+            tmptrain, tmptest = self.randomChoosDocs(negative, noTrainNeg,'neg')
+            trainSet = trainSet + tmptrain
+            testSet = testSet + tmptest
+            #insert train and test random docs from positive list
+            tmptrain, tmptest = self.randomChoosDocs(positive, noTrainPos,'pos')
+            trainSet = trainSet + tmptrain
+            testSet = testSet + tmptest
+            q2_1.i = 1
+            return trainSet, testSet
+        else:
+            return self.maintrain, self.maintest
+    
+    #return the test docs with the lables the classifier gives after training
+    def classifyTest(self,test, classifier, feature_extractor):
+        testClassifies = []
+        for doc,lbl in test:
+            tmpLbl = classifier.classify(feature_extractor(movie_reviews.words(fileids=[doc])))
+            x = (doc,tmpLbl)
+            testClassifies.append(x)
+        return testClassifies
+    
+    #calc TP (label both in the test and by the classifier)
+    def calcTP(self,label, testSet, classifierTest):
+        tp = 0
+        for x, y in izip(testSet, classifierTest):
+            doc,lbl = x
+            if x == y and lbl == label :
+                tp += 1
+        return tp
+    
+    #calc TN (non-label both in the test and by the classifier)    
+    def calcTN(self,label, testSet, classifierTest):
+        tn = 0
+        for x, y in izip(testSet, classifierTest):
+            testDoc,testLbl = x
+            classifierDoc,classifierLbl = y
+            if testDoc == classifierDoc and testLbl != label and classifierLbl != label :
+                tn += 1
+        return tn
+        
+    #calc FP (non-label by the test and label by the classifier)
+    def calcFP(self,label, testSet, classifierTest):
+        fp = 0
+        for x, y in izip(testSet, classifierTest):
+            testDoc,testLbl= x
+            classifierDoc,classifierLbl = y
+            if testDoc == classifierDoc and testLbl != label and classifierLbl == label :
+                fp += 1
+        return fp
+    
+    #calc FN (label by the test and non label by the classifier)
+    def calcFN(self,label, TestSet, classifierTest):
+        fn = 0
+        for x, y in izip(TestSet, classifierTest):
+            testDoc,testLbl = x
+            classifierDoc,classifierLbl = y
+            if testDoc == classifierDoc and testLbl == label and classifierLbl != label :
+                fn += 1
+        return fn
+        
+    #calc Precision(T) = TP / TP + FP
+    def calcPrec(self,label, testSet, classifierTest):
+        tp = self.calcTP(label, testSet, classifierTest)
+        fp = self.calcFP(label, testSet, classifierTest)
+        if tp+fp == 0:
+            prec = 0
+        else:
+            prec = float(float(tp)/(tp+fp))
+        return prec
+    
+    #calc Recall(T) = TP / TP + FN    
+    def calcRecall(self,label, testSet, classifierTest):
+        tp = self.calcTP(label, testSet, classifierTest)
+        fn = self.calcFN(label, testSet, classifierTest)
+        if tp + fn == 0:
+            recall = 0
+        else:
+            recall = float(float(tp)/(tp+fn))
+        return recall
+        
+    #calc F-Measure(T) = 2 x Precision x Recall / (Recall + Precision)  
+    def calcFMeasur(self,label, testSet, classifierTest):
+        prec = self.calcPrec(label, testSet, classifierTest)
+        recall = self.calcRecall(label, testSet, classifierTest)
+        if recall + prec == 0:
+            fMeasure = 0
+        else:
+            fMeasure = float((2 * prec * recall)/(recall + prec))
+        return fMeasure
+            
+    def evaluate_features(self,feature_extractor, N):
+        self.negative = movie_reviews.fileids('neg') #list of all names of the documents under neg folder
+        self.positive = movie_reviews.fileids('pos') #list of all names of the documents under pos folder
+        self.maintrain, self.maintest = self.stratifiedSplit(self.negative, self.positive, N)
+        lst = []
+        trainvocabulary = []
+        for doc,lbl in self.maintrain:
+            x = (feature_extractor(movie_reviews.words(fileids=[doc])),lbl)
+            lst.append(x)
+            trainvocabulary = trainvocabulary + x[0].keys()
+        trainvocabulary = set(trainvocabulary)
+        if q2_1.W == 0:
+            q2_1.W = len(trainvocabulary)
+        print "no. of features in train:", self.W
+        nb = classifier.train(lst)
+        self.testClassify = self.classifyTest(self.maintest, nb, feature_extractor)
+        print "accuracy = ", accuracy(self.maintest, self.testClassify)
+        print "Negative:"
+        print "    precision = ", self.calcPrec('neg', self.maintest, self.testClassify)
+        print "    recall = ", self.calcRecall('neg', self.maintest, self.testClassify)
+        print "    f measure = ", self.calcFMeasur('neg', self.maintest, self.testClassify)
+        print "Positive:"
+        print "    precision = ", self.calcPrec('pos', self.maintest, self.testClassify)
+        print "    recall = ", self.calcRecall('pos', self.maintest, self.testClassify)
+        print "    f measure = ", self.calcFMeasur('pos', self.maintest, self.testClassify)
+        nb.show_most_informative_features()
+        return nb
+    
+    #return a list of document's names that the classifier predicted wrong label
+    def error_prediction_docs(self, testSet, testClassify):
+        ans = []
+        for real,predict in izip(testSet, testClassify):
+            if real != predict:
+                realDoc, realLbl = real
+                predDoc, predLbl = predict
+                if predDoc == realDoc and realLbl != predLbl:
+                    ans.append(realDoc)
+        return ans
+          
+    #return k worst errors made by the classifier by returning the features that involved in many wrong decisions 
+    #using the mainTest and testClassify class parameters
+    def worst_errors_many_wrong_decisions(self, k, feature_extractor):
+        worst_errors = []
+        features = []
+        wrongDocs = self.error_prediction_docs(self.maintest, self.testClassify)
+        for doc in wrongDocs:
+            feature_dic = feature_extractor(movie_reviews.words(fileids=[doc]))
+            features = features + feature_dic.keys()
+        fd = FreqDist(feature.lower() for feature in features)
+        for i in range(1, k+1):
+            x = fd.max()
+            fd.pop(x)
+            worst_errors.append(x)
+        return worst_errors
+    
+# return a dictionary with all different words that apear in the document with the value True for each word  
+def bag_of_words(document):
+    return dict([(word, True) for word in document])
+        
+def main():
+    s = q2_1()
+    nbClassifier = s.evaluate_features(bag_of_words,2.0)
+    #k features that involved in many wrong decisions
+    errors = s.worst_errors_many_wrong_decisions(10, bag_of_words)
+    print "10 features that involved in many wrong decisions: ", errors
+    
+if __name__ == '__main__':
+    main() 
 </pre>
+The output for this code is:</br>
+accuracy =  0.642</br>
+Negative:</br>
+    precision =  0.986301369863</br>
+    recall =  0.288</br>
+    f measure =  0.445820433437</br>
+Positive:</br>
+    precision =  0.583138173302</br>
+    recall =  0.996</br>
+    f measure =  0.735598227474</br>
+Most Informative Features</br>
+              whatsoever = True              neg : pos    =     15.7 : 1.0</br>
+                  finest = True              pos : neg    =     13.0 : 1.0</br>
+             outstanding = True              pos : neg    =     11.8 : 1.0</br>
+                poignant = True              pos : neg    =     11.0 : 1.0</br>
+            embarrassing = True              neg : pos    =      9.8 : 1.0</br>
+                   shine = True              pos : neg    =      9.7 : 1.0</br>
+               ludicrous = True              neg : pos    =      9.0 : 1.0</br>
+                  forgot = True              neg : pos    =      8.3 : 1.0</br>
+                 noticed = True              pos : neg    =      8.3 : 1.0</br>
+                cultural = True              pos : neg    =      8.3 : 1.0</br>
+10 features that involved in many wrong decisions:  [',', '.', 'and', 'the', 'to', 'a', 'in', 'is', 'of', 'that']</br>
+</br>
 <a name="q2_2"></a>
 <h3>Q2.2: Data Exploration: Impact of Unknown Words</h3>
 The Code For This Task:</br>
