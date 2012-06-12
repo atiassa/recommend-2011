@@ -124,15 +124,17 @@ namespace MarkovDecisionProcess
             for (int j = 0; j < cTrials; j++)
             {
                 State s = m_dDomain.StartState, stag;
-                double alpha = 0.9;
-                for (int t = 1; t <= cStepsPerTrial;t++ )
+                double alpha = 0.7;
+                int t = 1;
+                while (!m_dDomain.IsGoalState(s) && t <= cStepsPerTrial)
                 {
                     Action a = epsilonGreedy(s, dEpsilon);
                     double r = s.Reward(a);
                     stag = s.Apply(a);
                     Q[s][a] =  Q[s][a] + alpha * (r + m_dDomain.DiscountFactor * MaxR(stag) - Q[s][a]);
                     s = stag;
-                   // alpha = alpha / (t * t);
+                  //  alpha = alpha / t ;
+                    t++;
                 }
 
             }
@@ -197,8 +199,9 @@ namespace MarkovDecisionProcess
             {
                 State s = m_dDomain.StartState, stag;
                 Action a = epsilonGreedy(s, dEpsilon);
-                double alpha = 0.9;
-                for (int t = 1; t <= cStepsPerTrial; t++)
+                double alpha = 0.7;
+                int t = 1;
+                while (!m_dDomain.IsGoalState(s) && t <= cStepsPerTrial)
                 {
                     double r = s.Reward(a);
                     stag = s.Apply(a);
@@ -206,7 +209,8 @@ namespace MarkovDecisionProcess
                     Q[s][a] = Q[s][a] + alpha * (r + m_dDomain.DiscountFactor * Q[stag][atag] - Q[s][a]);
                     s = stag;
                     a = atag;
-                    // alpha = alpha / (t * t);
+                   // alpha = alpha / t ;
+                    t++;
                 }
 
             }

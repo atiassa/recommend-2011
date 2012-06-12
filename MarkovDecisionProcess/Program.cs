@@ -16,15 +16,15 @@ namespace MarkovDecisionProcess
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Debug.Listeners.Add(new TextWriterTraceListener(fs));
 
-            RaceTrack rc = new RaceTrack("RaceTrack1.bmp");//change here to a different race BMP: 2 is very small, 3 is very large
+            RaceTrack rc = new RaceTrack("RaceTrack2.bmp");//change here to a different race BMP: 2 is very small, 3 is very large
             //RandomPolicy p = new RandomPolicy(rc);
             //PolicyValueFunction p = new PolicyValueFunction(rc);
             ValueFunction p = new ValueFunction(rc);
             TimeSpan ts; int up;
             //p.PolicyIteration(0.5, out up,out ts);
            // p.ValueIteration(0.5, out up, out ts);
-            //p.LearningQ(0.1,10000,1000, out up, out ts);
-            p.Sarsa(0.1,10000,1000, out up, out ts);
+            p.LearningQ(0.5,1000,1000, out up, out ts);
+           // p.Sarsa(0.5,1000,1000, out up, out ts);
             RaceViewer form = new RaceViewer(rc);
             form.Start();
             rc.DrawRace(p, form);
