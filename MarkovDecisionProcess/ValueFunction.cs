@@ -111,7 +111,7 @@ namespace MarkovDecisionProcess
             return 0;
         }
 
-        public void LearningQ(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
+        public void LearningQ(double dEpsilon,int cTrials, int cStepsPerTrial, out int cUpdates, out TimeSpan tsExecutionTime)
         {
             Debug.WriteLine("Starting learning-q");
             DateTime dtBefore = DateTime.Now;
@@ -121,18 +121,21 @@ namespace MarkovDecisionProcess
             //your code here
             initV0();
             initQ();
-            
-            State s = m_dDomain.StartState , stag;
-            Action chosenA = null;
-            do
+            for (int j = 0; j < cTrials; j++)
             {
-                chosenA = findMaxQA(s);
-                double r = s.Reward(chosenA);
-                stag = s.Apply(chosenA);
-                Q[s][chosenA] = (1-dEpsilon)*Q[s][chosenA] + dEpsilon*(r + m_dDomain.DiscountFactor *Q[stag][findMaxQA(stag)] - Q[s][chosenA]);
-                s = stag;
-            } while (!m_dDomain.IsGoalState(s));
-             
+                State s = m_dDomain.StartState, stag;
+                double alpha = 0.9;
+                for (int t = 1; t <= cStepsPerTrial;t++ )
+                {
+                    Action a = epsilonGreedy(s, dEpsilon);
+                    double r = s.Reward(a);
+                    stag = s.Apply(a);
+                    Q[s][a] =  Q[s][a] + alpha * (r + m_dDomain.DiscountFactor * MaxR(stag) - Q[s][a]);
+                    s = stag;
+                   // alpha = alpha / (t * t);
+                }
+
+            }
             foreach (State ss in m_dDomain.States)
                 ViBySActions[ss] = findMaxQA(ss);
 
@@ -140,14 +143,21 @@ namespace MarkovDecisionProcess
             Debug.WriteLine("\nFinished learning-q");
         }
 
+        private double MaxR(State stag)
+        {
+            double maxR = double.MinValue;
+            foreach (Action a in m_dDomain.Actions)
+                maxR = Math.Max(maxR,Q[stag][a] );
+            return maxR;
+        }
+
         private void initQ()
         {
             foreach (State s in m_dDomain.States)
             {
-                Dictionary<Action, double> d = new Dictionary<Action, double>();
+                Q.Add(s, new Dictionary<Action, double>());
                 foreach (Action a in m_dDomain.Actions)
-                    d.Add(a, double.MinValue);
-                Q.Add(s, d);
+                    Q[s].Add(a, 0);
             }
         }
 
@@ -156,7 +166,7 @@ namespace MarkovDecisionProcess
             List<Action> actions = new List<Action>();
             double maxQA = double.MinValue;
             foreach (Action a in m_dDomain.Actions)
-                if (Q[j][a] >= maxQA)
+                if (Q[j][a] > maxQA)
                     maxQA = Q[j][a];
             foreach (Action a in m_dDomain.Actions)
                 if (Q[j][a] == maxQA)
@@ -165,7 +175,15 @@ namespace MarkovDecisionProcess
             return actions[idx];
         }
 
-        public void Sarsa(double dEpsilon, out int cUpdates, out TimeSpan tsExecutionTime)
+        private Action epsilonGreedy(State s,double depsilon)
+        {
+            if ( RandomGenerator.NextDouble() > depsilon)
+                return m_dDomain.Actions.ElementAt(RandomGenerator.Next(m_dDomain.Actions.Count()));
+            else
+                return findMaxQA(s);
+        }
+
+        public void Sarsa(double dEpsilon,int cTrials, int cStepsPerTrial, out int cUpdates, out TimeSpan tsExecutionTime)
         {
             Debug.WriteLine("Starting SARSA");
             DateTime dtBefore = DateTime.Now;
@@ -175,18 +193,23 @@ namespace MarkovDecisionProcess
             //your code here
             initV0();
             initQ();
-            State s = m_dDomain.StartState, stag;
-            Action a = findMaxQA(s) , atag;
-            do
+            for (int j = 0; j < cTrials; j++)
             {
-                double r = s.Reward(a);
-                stag = s.Apply(a);
-                atag = findMaxQA(stag);
-                Q[s][a] = (1-dEpsilon)*Q[s][a] + dEpsilon*(r + m_dDomain.DiscountFactor*Q[stag][atag] - Q[s][a]);
-                s = stag;
-                a = atag;
-            } while (!m_dDomain.IsGoalState(s));
+                State s = m_dDomain.StartState, stag;
+                Action a = epsilonGreedy(s, dEpsilon);
+                double alpha = 0.9;
+                for (int t = 1; t <= cStepsPerTrial; t++)
+                {
+                    double r = s.Reward(a);
+                    stag = s.Apply(a);
+                    Action atag = epsilonGreedy(stag,dEpsilon);
+                    Q[s][a] = Q[s][a] + alpha * (r + m_dDomain.DiscountFactor * Q[stag][atag] - Q[s][a]);
+                    s = stag;
+                    a = atag;
+                    // alpha = alpha / (t * t);
+                }
 
+            }
             foreach (State ss in m_dDomain.States)
                 ViBySActions[ss] = findMaxQA(ss);
 
