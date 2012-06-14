@@ -111,38 +111,36 @@ namespace MarkovDecisionProcess
             return 0;
         }
 
-        public void LearningQ(double dEpsilon,int cTrials, int cStepsPerTrial, out int cUpdates, out TimeSpan tsExecutionTime)
+        public double LearningQ(double dEpsilon, int cTrials, int cStepsPerTrial)
         {
-            Debug.WriteLine("Starting learning-q");
-            DateTime dtBefore = DateTime.Now;
-            cUpdates = 0;
-            Application.DoEvents();
+            double dSumRewards = 0.0;
             
             //your code here
             initV0();
             initQ();
             for (int j = 0; j < cTrials; j++)
             {
-                State s = m_dDomain.StartState, stag;
                 double alpha = 0.7;
+                State s = m_dDomain.StartState, stag;
                 int t = 1;
                 while (!m_dDomain.IsGoalState(s) && t <= cStepsPerTrial)
                 {
                     Action a = epsilonGreedy(s, dEpsilon);
                     double r = s.Reward(a);
+                    dSumRewards += r;
                     stag = s.Apply(a);
                     Q[s][a] =  Q[s][a] + alpha * (r + m_dDomain.DiscountFactor * MaxR(stag) - Q[s][a]);
                     s = stag;
-                  //  alpha = alpha / t ;
                     t++;
+                   // alpha = alpha /t;
                 }
 
             }
             foreach (State ss in m_dDomain.States)
                 ViBySActions[ss] = findMaxQA(ss);
 
-            tsExecutionTime = DateTime.Now - dtBefore;
-            Debug.WriteLine("\nFinished learning-q");
+            Debug.WriteLine("\nDone computing ADR");
+            return dSumRewards;
         }
 
         private double MaxR(State stag)
@@ -185,13 +183,9 @@ namespace MarkovDecisionProcess
                 return findMaxQA(s);
         }
 
-        public void Sarsa(double dEpsilon,int cTrials, int cStepsPerTrial, out int cUpdates, out TimeSpan tsExecutionTime)
+        public double Sarsa(double dEpsilon, int cTrials, int cStepsPerTrial)
         {
-            Debug.WriteLine("Starting SARSA");
-            DateTime dtBefore = DateTime.Now;
-            cUpdates = 0;
-            Application.DoEvents();
-            
+            double dSumRewards = 0.0;
             //your code here
             initV0();
             initQ();
@@ -204,12 +198,12 @@ namespace MarkovDecisionProcess
                 while (!m_dDomain.IsGoalState(s) && t <= cStepsPerTrial)
                 {
                     double r = s.Reward(a);
+                    dSumRewards += r;
                     stag = s.Apply(a);
                     Action atag = epsilonGreedy(stag,dEpsilon);
                     Q[s][a] = Q[s][a] + alpha * (r + m_dDomain.DiscountFactor * Q[stag][atag] - Q[s][a]);
                     s = stag;
                     a = atag;
-                   // alpha = alpha / t ;
                     t++;
                 }
 
@@ -217,8 +211,8 @@ namespace MarkovDecisionProcess
             foreach (State ss in m_dDomain.States)
                 ViBySActions[ss] = findMaxQA(ss);
 
-            tsExecutionTime = DateTime.Now - dtBefore;
-            Debug.WriteLine("\nFinished SARSA");
+            Debug.WriteLine("\nDone computing ADR");
+            return dSumRewards;
         }
 
     }
