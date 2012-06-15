@@ -205,6 +205,7 @@ namespace MarkovDecisionProcess
                     s = stag;
                     a = atag;
                     t++;
+                    // alpha = alpha /t;
                 }
 
             }
