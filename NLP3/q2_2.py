@@ -45,6 +45,8 @@ def pcfg_learn(treebank, n):
              for p in pcount] 
     
     learned_pcfg = WeightedGrammar(Nonterminal('S'), prods)
+
+    plot_dist_productions_by_frequency(productions)
     print 'How many productions are learned from the trees? %d ' % len(learned_pcfg.productions())
     print 'How many interior nodes were in the treebank?    %d ' % treebank_interior_nodes
     return  learned_pcfg
@@ -75,34 +77,36 @@ def pcfg_cnf_learn(treebank, n):
     prods = [WeightedProduction(p.lhs(), p.rhs(), 
                       prob=float(pcount[p]) / lcount[p.lhs()]) 
              for p in pcount] 
-    
+  
     learned_pcfg_cnf = WeightedGrammar(Nonterminal('S'), prods)
+    
     print 'How many productions are learned from the CNF trees?   %d ' % len(learned_pcfg_cnf.productions())
     print 'How many interior nodes were in the original treebank? %d ' %  treebank_interior_nodes
     print 'How many interior nodes were in the CNF treebank?      %d ' % cnf_interior_nodes
-    
     return learned_pcfg_cnf 
 
-def plot_dist_productions_by_frequency(pcfg):
-    productions = pcfg.productions()
-    fd = FreqDist(productions)
-    fdd = FreqDist(fd.values())
+def plot_dist_productions_by_frequency(productions):
+    f= FreqDist(productions)
+    fdd = FreqDist(f.values())
     x = []
     y = []
-    for i in np.arange(1,200):
-        x.append(i)
-        y.append(fdd[i])
-    plt.plot(x,y,lw=1,color= 'g')
-    plt.title('productions by frequency' )
+    for k in fdd.keys():
+        x.append(k)
+        y.append(fdd[k])
+    plt.plot(x,y,lw=2,color= 'b')
+    plt.title('Productions by frequency' )
+    plt.xlabel('frequency')
+    plt.ylabel('number of rules with frequency')
     plt.show()
 
 def main():    
+    n = 20
     treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
                                 r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
-    learned_pcfg = pcfg_learn(treebank, 10) 
-#    plot_dist_productions_by_frequency(learned_pcfg)
+    print "\n--PCFG--" 
+    learned_pcfg = pcfg_learn(treebank, n) 
     print "\n--CNF PCFG--" 
-    learned_pcfg_cnf = pcfg_cnf_learn(treebank, 10) 
+    learned_pcfg_cnf = pcfg_cnf_learn(treebank, n) 
     
 if __name__ == '__main__':
     main() 
