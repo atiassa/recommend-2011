@@ -6,7 +6,7 @@ from nltk.corpus import LazyCorpusLoader, BracketParseCorpusReader , simplify_ws
 import matplotlib.pyplot as plt
 import numpy as np
 
-
+# filter NONE noneterminal from the tree
 def filter_NONE(tree):
     if isinstance(tree, str):
         return tree
@@ -20,12 +20,25 @@ def filter_NONE(tree):
     if len(f_childrens) == 0: return None
     return nltk.Tree(tree.node,f_childrens)
 
+# create Weighted Grammar for given productions
+def createWG(productions):
+    pcount = {} 
+    lcount = {}
+    for prod in productions:
+        lcount[prod.lhs()] = lcount.get(prod.lhs(), 0) + 1
+        pcount[prod] = pcount.get(prod, 0) + 1
+    
+    prods = [WeightedProduction(p.lhs(), p.rhs(), 
+             prob=float(pcount[p]) / lcount[p.lhs()]) for 
+             p in pcount]
+    learned_pcfg_cnf = WeightedGrammar(Nonterminal('S'), prods)
+    return learned_pcfg_cnf
+
+
 # - treebank is the nltk.corpus.treebank lazy corpus reader
 # - n indicates the number of trees to read
 # - return an nltk.WeigthedGrammar
 def pcfg_learn(treebank, n):
-    pcount = {} 
-    lcount = {}
     productions = []
     treebank_interior_nodes = 0;
     
@@ -36,15 +49,7 @@ def pcfg_learn(treebank, n):
             if tree!= None:
                 productions += tree.productions()
             
-    for prod in productions:
-        lcount[prod.lhs()] = lcount.get(prod.lhs(), 0) + 1 
-        pcount[prod]       = pcount.get(prod,       0) + 1 
-
-    prods = [WeightedProduction(p.lhs(), p.rhs(), 
-                      prob=float(pcount[p]) / lcount[p.lhs()]) 
-             for p in pcount] 
-    
-    learned_pcfg = WeightedGrammar(Nonterminal('S'), prods)
+    learned_pcfg = createWG( productions)
 
     plot_dist_productions_by_frequency(productions)
     print 'How many productions are learned from the trees? %d ' % len(learned_pcfg.productions())
@@ -55,8 +60,6 @@ def pcfg_learn(treebank, n):
 #-- n indicates the number of trees to read
 #-- return an nltk.WeigthedGrammar in CNF
 def pcfg_cnf_learn(treebank, n):
-    pcount = {} 
-    lcount = {}
     productions = []
     treebank_interior_nodes = 0
     cnf_interior_nodes = 0
@@ -70,15 +73,7 @@ def pcfg_cnf_learn(treebank, n):
                 cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
                 productions += tree.productions()
             
-    for prod in productions:
-        lcount[prod.lhs()] = lcount.get(prod.lhs(), 0) + 1 
-        pcount[prod]       = pcount.get(prod,       0) + 1 
-
-    prods = [WeightedProduction(p.lhs(), p.rhs(), 
-                      prob=float(pcount[p]) / lcount[p.lhs()]) 
-             for p in pcount] 
-  
-    learned_pcfg_cnf = WeightedGrammar(Nonterminal('S'), prods)
+    learned_pcfg_cnf = createWG(productions)
     
     print 'How many productions are learned from the CNF trees?   %d ' % len(learned_pcfg_cnf.productions())
     print 'How many interior nodes were in the original treebank? %d ' %  treebank_interior_nodes
@@ -102,46 +97,59 @@ def plot_dist_productions_by_frequency(productions):
 # determines whether a tree can be parsed by a grammar
 # tests that a given tree can be produced by a grammar
 def cover_tree(grammar, tree):
-    for p in tree.productions():
-        if (grammar.productions().count(p) == 0 ):
+    for pt in tree.productions():
+        found = False
+        for pg in grammar.productions():
+            if (pt.rhs()== pg.rhs()) & (pt.lhs()==pg.lhs()):
+                found = True 
+                break
+        if not found :
             return False
     return True
 
 # keep only the F most frequent rules out of the N rules in the PCFG
 # return the number of trees "missed" by the new pcfg
-def count_misses(pcfg,treebank,n,fdProd,F):
+def count_misses(pcfg,treebank,n):
     misses = 0
-    prods = 
-    reduced_pcfg =  WeightedGrammar(Nonterminal('S'), prods)
     for item in treebank.items[:n]:
         for tree in treebank.parsed_sents(item):
-            if not cover_tree(reduced_pcfg, tree):
+            tree = filter_NONE(tree)
+            if not cover_tree(pcfg, tree):
                 misses +=1
     return misses
+
 
 # Assume we "cut" the tail of the learned PCFG, that is we remove the least frequent rules,
 # so that we keep only the F most frequent rules out of the N rules in the PCFG
 # Draw a plot that indicates the number of trees "missed" 
 # as the number of rules is reduced (sample every 10% of the size of the grammar).   
-def plot_misses(pcfg,treebank):
-     for item in treebank.items[:n]:
+def plot_misses(pcfg,treebank,n):
+    productions = []
+    for item in treebank.items[:n]:
         for tree in treebank.parsed_sents(item):
-            treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
             tree = filter_NONE(tree)
             if tree!= None:
-                tree.chomsky_normal_form(horzMarkov = 2)
-                cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
                 productions += tree.productions()
-    f = FreqDist(productions)
+    fk= FreqDist(productions).keys()
+    
     x = []
     y = []
-    for reduced in :
-        x.append(reduced)
-        y.append(count_misses(pcfg,treebank))
-    plt.plot(x,y,lw=2,color= 'b')
-    plt.title('Productions by frequency' )
-    plt.xlabel('frequency')
-    plt.ylabel('number of rules with frequency')
+    for reduced in np.arange(10):
+        F = int(len(fk)*(reduced*0.1))
+        x.append(F)
+        prodsTake = list(productions)
+        for k in fk[len(fk)-F:]:
+            prodsTake.remove(k)
+        if len(prodsTake)==0:
+            y.append(len(prodsTake))
+            continue
+        cutPcfg = createWG(prodsTake)
+        y.append(count_misses(cutPcfg,treebank,n))
+        
+    plt.plot(x,y,lw=1.5,color= 'b')
+    plt.title('cut the tail of the learned PCFG' )
+    plt.xlabel('F cuted from pcfg')
+    plt.ylabel('misses')
     plt.show()     
     
      
@@ -149,9 +157,9 @@ def main():
     n = 20
     treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
                                 r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
-    print "\n--PCFG--" 
-#    learned_pcfg = pcfg_learn(treebank, n)
-    plot_misses(learned_pcfg,treebank) 
+    print "--PCFG--" 
+    learned_pcfg = pcfg_learn(treebank, n)
+    plot_misses(learned_pcfg,treebank,n) 
     print "\n--CNF PCFG--" 
     learned_pcfg_cnf = pcfg_cnf_learn(treebank, n) 
     
