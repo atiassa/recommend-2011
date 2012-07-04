@@ -13,7 +13,6 @@ f7={} # f7 suffix1: last letter of the word
 f8={} # f8 suffix2: last two letters of the word
 f9={} # f9 suffix3: last three letters of the word
 
-vectors = []
 
 def print_encoding():
     print "Classes"
@@ -65,8 +64,6 @@ def addFeature(word,pos,clas):
         if (f6.has_key(word[0:3]) == False) : f6[word[0:3]] = str(len(f6)) 
         if (f9.has_key(word[l-3:l]) == False) : f9[word[l-3:l]] = str(len(f9))
 
-
-
 def getORT(word):
     import re
     regex = re.compile(
@@ -86,21 +83,31 @@ def getORT(word):
     return 'regular'
 
 def extract_features(sent):
+    vectors = []
+    cl = []
     for tree in sent:
         for tup in tree:
             if type(tup) == tuple:
                 v = generateVector(tup[0],tup[1],'O')
-                if (v!="") : vectors.append(v) 
+                if (len(v)!=0) : 
+                    vectors.append(v)
+                    if(cl.count(v[0])==0): cl.append(v[0]) 
             else:
                 root = tup.node
                 first = tup[0]
                 v = generateVector(first[0],first[1],'B-'+root)
-                if (v!="") : vectors.append(v)
+                if (len(v)!=0) : 
+                    vectors.append(v)
+                    if(cl.count(v[0])==0): cl.append(v[0])
                 for t in tup[1:]:
                     v= generateVector(t[0],t[1],'I-'+root)
-                    if (v!="") : vectors.append(v)
+                    if (len(v)!=0) :
+                        vectors.append(v)
+                        if(cl.count(v[0])==0): cl.append(v[0])
+    cl.sort()
+    return cl , vectors
 
-def generateVector(word,pos,clas): 
+def generateVectorStrings(word,pos,clas): 
     if (Classes.count(clas)==0): return "" 
     vec = str(Classes.index(clas) + 1) + ' '   
     vec = vec + str(int(f1[word]) + 1) + ':1 ' 
@@ -114,12 +121,28 @@ def generateVector(word,pos,clas):
     if l>1: vec = vec + str(len(f1) + len(f2) + len(f3) + len(f4) + len(f5) + len(f6) + len(f7) + int(f8[word[l-2:l]]) + 1) + ':1 '
     if l>2: vec = vec + str(len(f1) + len(f2) + len(f3) + len(f4) + len(f5) + len(f6) + len(f7) + len(f8) + int(f9[word[l-3:l]]) + 1) + ':1 '
     return vec
+
+def generateVector(word,pos,clas):
+    vec = [] 
+    if (Classes.count(clas)==0): return vec 
+    vec.append(Classes.index(clas) + 1)  
+    vec.append(int(f1[word]) + 1)  
+    vec.append(len(f1) + int(f2[pos]) + 1)
+    vec.append(len(f1) + len(f2) + int(f3[getORT(word)]) + 1)
+    vec.append(len(f1) + len(f2) + len(f3) + int(f4[word[0]]) + 1) 
+    l = len(word)
+    if l>1: vec.append(len(f1) + len(f2) + len(f3) + len(f4) + int(f5[word[0:2]]) + 1)
+    if l>2: vec.append(len(f1) + len(f2) + len(f3) + len(f4) + len(f5) + int(f6[word[0:3]]) + 1) 
+    vec.append(len(f1) + len(f2) + len(f3) + len(f4) + len(f5) + len(f6) + int(f7[word[l-1]]) + 1)
+    if l>1: vec.append(len(f1) + len(f2) + len(f3) + len(f4) + len(f5) + len(f6) + len(f7) + int(f8[word[l-2:l]]) + 1) 
+    if l>2: vec.append(len(f1) + len(f2) + len(f3) + len(f4) + len(f5) + len(f6) + len(f7) + len(f8) + int(f9[word[l-3:l]]) + 1) 
+    return vec
     
 def main():
 #    train = conll2002.chunked_sents('esp.train')# In Spanish    
     train = conll2002.chunked_sents('esp.testa')# In Spanish
     choosing_encoding(train)
-    extract_features(train)
+    cl , vectors = extract_features(train)
     file = open("test.txt", 'w')
     for x in vectors :
         x = x+'\n'

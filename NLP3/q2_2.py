@@ -99,12 +99,59 @@ def plot_dist_productions_by_frequency(productions):
     plt.ylabel('number of rules with frequency')
     plt.show()
 
+# determines whether a tree can be parsed by a grammar
+# tests that a given tree can be produced by a grammar
+def cover_tree(grammar, tree):
+    for p in tree.productions():
+        if (grammar.productions().count(p) == 0 ):
+            return False
+    return True
+
+# keep only the F most frequent rules out of the N rules in the PCFG
+# return the number of trees "missed" by the new pcfg
+def count_misses(pcfg,treebank,n,fdProd,F):
+    misses = 0
+    prods = 
+    reduced_pcfg =  WeightedGrammar(Nonterminal('S'), prods)
+    for item in treebank.items[:n]:
+        for tree in treebank.parsed_sents(item):
+            if not cover_tree(reduced_pcfg, tree):
+                misses +=1
+    return misses
+
+# Assume we "cut" the tail of the learned PCFG, that is we remove the least frequent rules,
+# so that we keep only the F most frequent rules out of the N rules in the PCFG
+# Draw a plot that indicates the number of trees "missed" 
+# as the number of rules is reduced (sample every 10% of the size of the grammar).   
+def plot_misses(pcfg,treebank):
+     for item in treebank.items[:n]:
+        for tree in treebank.parsed_sents(item):
+            treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            tree = filter_NONE(tree)
+            if tree!= None:
+                tree.chomsky_normal_form(horzMarkov = 2)
+                cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
+                productions += tree.productions()
+    f = FreqDist(productions)
+    x = []
+    y = []
+    for reduced in :
+        x.append(reduced)
+        y.append(count_misses(pcfg,treebank))
+    plt.plot(x,y,lw=2,color= 'b')
+    plt.title('Productions by frequency' )
+    plt.xlabel('frequency')
+    plt.ylabel('number of rules with frequency')
+    plt.show()     
+    
+     
 def main():    
     n = 20
     treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
                                 r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
     print "\n--PCFG--" 
-    learned_pcfg = pcfg_learn(treebank, n) 
+#    learned_pcfg = pcfg_learn(treebank, n)
+    plot_misses(learned_pcfg,treebank) 
     print "\n--CNF PCFG--" 
     learned_pcfg_cnf = pcfg_cnf_learn(treebank, n) 
     
