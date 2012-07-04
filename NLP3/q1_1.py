@@ -143,11 +143,12 @@ def main():
     train = conll2002.chunked_sents('esp.testa')# In Spanish
     choosing_encoding(train)
     cl , vectors = extract_features(train)
-    file = open("test.txt", 'w')
-    for x in vectors :
-        x = x+'\n'
-        file.write(x.encode('ascii'))
-    file.close() 
+    print
+#    file = open("test.txt", 'w')
+#    for x in vectors :
+#        x = x+'\n'
+#        file.write(x.encode('ascii'))
+#    file.close() 
 #    conll2002.chunked_sents('esp.testa') # In Spanish
 #    conll2002.chunked_sents('esp.testb') # In Spanish
 #    
