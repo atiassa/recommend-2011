@@ -1,5 +1,5 @@
 from nltk.corpus import conll2002
-#from svm import *
+import svm,svmutil
 
 Classes = ['B-PER', 'I-PER', 'B-LOC', 'I-LOC', 'B-ORG', 'I-ORG', 'O']
 
@@ -91,20 +91,19 @@ def extract_features(sent):
                 v = generateVector(tup[0],tup[1],'O')
                 if (len(v)!=0) : 
                     vectors.append(v)
-                    if(cl.count(v[0])==0): cl.append(v[0]) 
+                    cl.append(v[0])
             else:
                 root = tup.node
                 first = tup[0]
                 v = generateVector(first[0],first[1],'B-'+root)
                 if (len(v)!=0) : 
                     vectors.append(v)
-                    if(cl.count(v[0])==0): cl.append(v[0])
+                    cl.append(v[0])
                 for t in tup[1:]:
                     v= generateVector(t[0],t[1],'I-'+root)
                     if (len(v)!=0) :
                         vectors.append(v)
-                        if(cl.count(v[0])==0): cl.append(v[0])
-    cl.sort()
+                        cl.append(v[0])
     return cl , vectors
 
 def generateVectorStrings(word,pos,clas): 
@@ -139,11 +138,16 @@ def generateVector(word,pos,clas):
     return vec
     
 def main():
-#    train = conll2002.chunked_sents('esp.train')# In Spanish    
-    train = conll2002.chunked_sents('esp.testa')# In Spanish
+    train = conll2002.chunked_sents('esp.train')# In Spanish    
+#    train = conll2002.chunked_sents('esp.testa')# In Spanish
     choosing_encoding(train)
     cl , vectors = extract_features(train)
-    print
+    p = svm.svm_problem(cl, vectors)
+    param = svm.svm_parameter()
+    param.kernel_type = 0
+    param.C = 10
+#    m = svmutil.svm_train(p,param)
+    
 #    file = open("test.txt", 'w')
 #    for x in vectors :
 #        x = x+'\n'
