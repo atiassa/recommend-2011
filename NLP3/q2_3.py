@@ -5,59 +5,54 @@ from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
 from nltk.corpus import LazyCorpusLoader, BracketParseCorpusReader , simplify_wsj_tag
 import matplotlib.pyplot as plt
 import numpy as np
-
-# filter NONE noneterminal from the tree
-def filter_NONE(tree):
-    if isinstance(tree, str):
-        return tree
-    if tree.node =='-NONE-':
-        return None
-    f_childrens = []
-    for child in tree[0:]:
-        c = filter_NONE(child)
-        if c != None :
-            f_childrens.append(c)
-    if len(f_childrens) == 0: return None
-    return nltk.Tree(tree.node,f_childrens)
+import q2_2
 
 def plot_histogram(hTitle,xTitle,yTitle, fd):
     y = []
     for k in fd.keys():
         y.append(fd[k])
-    plt.hist(y, normed=1)
+    plt.hist(y )
     plt.title(hTitle )
     plt.xlabel(xTitle)
     plt.ylabel(yTitle)
     plt.show()
 
-def dist_NP(above , productions):
-    fd = FreqDist()
-    for p in productions:
-        if p.lhs() == Nonterminal('NP'):
-            fd.inc(p.rhs())
-    return fd
-
-def Report_NP_statistics(treebank,n): 
-    productions = []
-    for item in treebank.items[:n]:
+def dist_NP(above , tree , p):
+    if isinstance(tree, str):
+        return []
+    l = []
+    for child in tree[0:]:
+        if p :
+            if tree.node =='NP':
+                l.append(child.node)
+        if (tree.node == above) | (above =="") :
+            l.extend(dist_NP(above , child,True))
+        else: l.extend(dist_NP(above , child,False))
+    return l
+         
+def Report_NP_statistics(treebank):
+    l = []
+    l_S = []
+    l_VP = []
+    for item in treebank.items[2:]:
         for tree in treebank.parsed_sents(item):
-            tree = filter_NONE(tree)
-            print tree
+            tree = q2_2.filter_NONE(tree)
             if tree!= None:
-                productions += tree.productions()
+                l.extend(dist_NP("" , tree,True))
+                l_S.extend(dist_NP("S" , tree,False))
+                l_VP.extend(dist_NP("VP" , tree,False))
+                
+    fd = FreqDist(l)
+    fd_S = FreqDist(l_S)
+    fd_VP = FreqDist(l_VP)
+    plot_histogram("All NPs","RHS non-term","distribution " , fd)
+#    plot_histogram("NPs under S","RHS non-term","distribution " , fd_S)
+#    plot_histogram("NPs under VP ","RHS non-term","distribution " , fd_VP)
     
-    fd_all = dist_NP("", productions)
-#    fd_S = dist_NP("S", productions)
-#    fd_VP = dist_NP("VP", productions)
-    plot_histogram("all","RHS non-term","distribution " , fd_all)
-#    plot_histogram("S","RHS non-term","distribution " , fd_S)
-#    plot_histogram("VP","RHS non-term","distribution " , fd_VP)
-    
-def main():    
-    n = 1
+def main():   
     treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
                                 r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
-    Report_NP_statistics(treebank, n) 
+    Report_NP_statistics(treebank)
     
 if __name__ == '__main__':
     main() 

@@ -41,13 +41,16 @@ def createWG(productions):
 def pcfg_learn(treebank, n):
     productions = []
     treebank_interior_nodes = 0;
-    
-    for item in treebank.items[:n]:
+    nt = 0
+    for item in treebank.items:
+        if nt == n: break
         for tree in treebank.parsed_sents(item):
-            treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            if nt == n: break
             tree = filter_NONE(tree)
             if tree!= None:
+                treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
                 productions += tree.productions()
+                nt += 1
             
     learned_pcfg = createWG( productions)
 
@@ -63,15 +66,18 @@ def pcfg_cnf_learn(treebank, n):
     productions = []
     treebank_interior_nodes = 0
     cnf_interior_nodes = 0
-    
-    for item in treebank.items[:n]:
+    nt = 0
+    for item in treebank.items:
+        if nt == n: break
         for tree in treebank.parsed_sents(item):
-            treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            if nt == n: break
             tree = filter_NONE(tree)
             if tree!= None:
+                treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
                 tree.chomsky_normal_form(horzMarkov = 2)
                 cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
                 productions += tree.productions()
+                nt += 1
             
     learned_pcfg_cnf = createWG(productions)
     
@@ -111,9 +117,13 @@ def cover_tree(grammar, tree):
 # return the number of trees "missed" by the new pcfg
 def count_misses(pcfg,treebank,n):
     misses = 0
-    for item in treebank.items[:n]:
+    nt = 0
+    for item in treebank.items:
+        if nt == n: break
         for tree in treebank.parsed_sents(item):
+            if nt == n: break
             tree = filter_NONE(tree)
+            nt += 1
             if not cover_tree(pcfg, tree):
                 misses +=1
     return misses
@@ -125,11 +135,15 @@ def count_misses(pcfg,treebank,n):
 # as the number of rules is reduced (sample every 10% of the size of the grammar).   
 def plot_misses(pcfg,treebank,n):
     productions = []
-    for item in treebank.items[:n]:
+    nt = 0
+    for item in treebank.items:
+        if nt == n: break
         for tree in treebank.parsed_sents(item):
+            if nt == n: break
             tree = filter_NONE(tree)
             if tree!= None:
                 productions += tree.productions()
+                nt += 1
     fk= FreqDist(productions).keys()
     
     x = []
@@ -154,7 +168,7 @@ def plot_misses(pcfg,treebank,n):
     
      
 def main():    
-    n = 20
+    n = 2000
     treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
                                 r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
     print "--PCFG--" 

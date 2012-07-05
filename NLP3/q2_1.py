@@ -79,8 +79,7 @@ def KL_Divergence(p,q):
         d = pi / qi
         if (d != 0):
             div += pi * math.log(d) 
-    return div
-    
+    return div  
 
 def main():
     grammar = toy_pcfg2
