@@ -1,7 +1,7 @@
 import nltk
 import nltk.grammar as gram
 from nltk.probability import DictionaryProbDist , FreqDist
-from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
+from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal, Production
 from my_simplify import *
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,9 +51,9 @@ def pcfg_learn(treebank, n):
         
     learned_pcfg = createWG( productions)
 
-#    plot_dist_productions_by_frequency(productions)
-#    print 'How many productions are learned from the trees? %d ' % len(learned_pcfg.productions())
-#    print 'How many interior nodes were in the treebank?    %d ' % treebank_interior_nodes
+    plot_dist_productions_by_frequency(productions)
+    print 'How many productions are learned from the trees? %d ' % len(learned_pcfg.productions())
+    print 'How many interior nodes were in the treebank?    %d ' % treebank_interior_nodes
     return  learned_pcfg
 
 #-- treebank is the nltk.corpus.treebank lazy corpus reader (simplified tags)
@@ -97,15 +97,13 @@ def plot_dist_productions_by_frequency(productions):
 # determines whether a tree can be parsed by a grammar
 # tests that a given tree can be produced by a grammar
 def cover_tree(grammar, tree):
-    for pt in tree.productions():
-        found = False
-        for pg in grammar.productions():
-            if (pt.rhs()== pg.rhs()) & (pt.lhs()==pg.lhs()):
-                found = True 
-                break
-        if not found :
-            return False
-    return True
+    tree_productions = set(tree.productions())
+    gram_productions = []
+    pram_prods = grammar.productions()
+    for p in pram_prods :
+        pram_prods.append(Production(p.lhs(),p.rhs()))
+    gram_productions = set(pram_prods)
+    return tree_productions.issubset(gram_productions)
 
 # keep only the F most frequent rules out of the N rules in the PCFG
 # return the number of trees "missed" by the new pcfg
@@ -118,7 +116,6 @@ def count_misses(pcfg,treebank,n):
             if not cover_tree(pcfg, tree):
                 misses +=1
     return misses
-
 
 # Assume we "cut" the tail of the learned PCFG, that is we remove the least frequent rules,
 # so that we keep only the F most frequent rules out of the N rules in the PCFG

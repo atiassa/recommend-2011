@@ -1,5 +1,5 @@
 from nltk.corpus import conll2002
-import svm,svmutil
+from svm import *
 
 Classes = ['B-PER', 'I-PER', 'B-LOC', 'I-LOC', 'B-ORG', 'I-ORG', 'O']
 
@@ -90,19 +90,19 @@ def extract_features(sent):
             if type(tup) == tuple:
                 v = generateVector(tup[0],tup[1],'O')
                 if (len(v)!=0) : 
-                    vectors.append(v)
+                    vectors.append(v[1:])
                     cl.append(v[0])
             else:
                 root = tup.node
                 first = tup[0]
                 v = generateVector(first[0],first[1],'B-'+root)
                 if (len(v)!=0) : 
-                    vectors.append(v)
+                    vectors.append(v[1:])
                     cl.append(v[0])
                 for t in tup[1:]:
                     v= generateVector(t[0],t[1],'I-'+root)
                     if (len(v)!=0) :
-                        vectors.append(v)
+                        vectors.append(v[1:])
                         cl.append(v[0])
     return cl , vectors
 
@@ -142,15 +142,20 @@ def main():
 #    train = conll2002.chunked_sents('esp.testa')# In Spanish
     choosing_encoding(train)
     cl , vectors = extract_features(train)
-    p = svm.svm_problem(cl, vectors)
-    param = svm.svm_parameter()
-    param.kernel_type = 0
+    p = svm_problem([1,-1], [[1,0,1],[-1,0,-1]])  
+    param = svm_parameter()
+    param.kernel_type = 4
     param.C = 10
+    m = svm_model(p, param)
+    m.predict([1,1,1])
+    m.save('test.model')
+    m.predict([1,1,1])
+    
 #    m = svmutil.svm_train(p,param)
     
 #    file = open("test.txt", 'w')
 #    for x in vectors :
-#        x = x+'\n'
+#        x = x+'\n' 
 #        file.write(x.encode('ascii'))
 #    file.close() 
 #    conll2002.chunked_sents('esp.testa') # In Spanish

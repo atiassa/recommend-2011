@@ -18,7 +18,7 @@ def main():
     learned_pcfg = pcfg_learn(treebank, 1000)
     trees = []
     for i in np.arange(1000):
-        tree.append(pcfg_generate(learned_pcfg))
+        trees.append(pcfg_generate(learned_pcfg))
     
     MLEentropy = calc_entropy(corpus, train_size, MLEbigram)
     print "MLE bigram entropy = %f" %MLEentropy
