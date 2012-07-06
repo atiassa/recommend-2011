@@ -2,7 +2,7 @@ import nltk
 import nltk.grammar as gram
 from nltk.probability import ConditionalFreqDist , FreqDist , DictionaryProbDist ,ProbDistI,  MLEProbDist, LidstoneProbDist
 from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
-from nltk.corpus import LazyCorpusLoader, BracketParseCorpusReader , simplify_wsj_tag
+import my_simplify
 import matplotlib.pyplot as plt
 import numpy as np
 from nltk.model import NgramModel
@@ -16,11 +16,17 @@ def bigram_learn(train, estimator=None):
 
     return NgramModel(2, train, estimator)
 
+def likelihood(treebank, model):
+    sigma = 0
+    for tree in treebank:
+        sigma += model.entropy(tree.leaves())
+
+    avrg = sigma / len(treebank)
+    return avrg
+
 def main():
     n= 2000
-    treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
-                                r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
-    learned_pcfg = q2_2.pcfg_learn(treebank, n)
+    learned_pcfg = q2_2.pcfg_learn(my_simplify.treebank, n)
     sents = []
     for i in range(0,1000):
         sents.append(['START']+q2_1.pcfg_generate(learned_pcfg).leaves())

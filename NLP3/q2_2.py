@@ -2,7 +2,7 @@ import nltk
 import nltk.grammar as gram
 from nltk.probability import DictionaryProbDist , FreqDist
 from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
-from nltk.corpus import LazyCorpusLoader, BracketParseCorpusReader , simplify_wsj_tag
+import my_simplify
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -168,14 +168,12 @@ def plot_misses(pcfg,treebank,n):
     
      
 def main():    
-    n = 2000
-    treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
-                                r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
+    n = 1000
     print "--PCFG--" 
-    learned_pcfg = pcfg_learn(treebank, n)
-    plot_misses(learned_pcfg,treebank,n) 
+    learned_pcfg = pcfg_learn(my_simplify.treebank, n)
+    plot_misses(learned_pcfg,my_simplify.treebank,n) 
     print "\n--CNF PCFG--" 
-    learned_pcfg_cnf = pcfg_cnf_learn(treebank, n) 
+    learned_pcfg_cnf = pcfg_cnf_learn(my_simplify.treebank, n) 
     
 if __name__ == '__main__':
     main() 

@@ -2,7 +2,7 @@ import nltk
 import nltk.grammar as gram
 from nltk.probability import ConditionalFreqDist , FreqDist , DictionaryProbDist ,ProbDistI,  MLEProbDist, LidstoneProbDist
 from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
-from nltk.corpus import LazyCorpusLoader, BracketParseCorpusReader , simplify_wsj_tag
+import my_simplify
 import matplotlib.pyplot as plt
 import numpy as np
 from nltk.model import NgramModel
@@ -54,16 +54,14 @@ def bigram_learn(treebank, n, estimator=None):
     return NgramModel(2, train, estimator)
 
 def main():
-    treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
-                                r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
-    treeNum = treebank_tree_num(treebank)
+    treeNum = treebank_tree_num(my_simplify.treebank)
     
     LIDestimator = lambda fdist, bins: LidstoneProbDist(fdist, 0.2)
     
-    MLEbigram = bigram_learn(treebank, treeNum*0.8) #  MLEestimator estimator
-    LIDbigram = bigram_learn(treebank, treeNum*0.8 , LIDestimator)
+    MLEbigram = bigram_learn(my_simplify.treebank, treeNum*0.8) #  MLEestimator estimator
+    LIDbigram = bigram_learn(my_simplify.treebank, treeNum*0.8 , LIDestimator)
     
-    test = get_treebank_test_sent(treebank, treeNum*0.8)
+    test = get_treebank_test_sent(my_simplify.treebank, treeNum*0.8)
     MLEentropy = MLEbigram.entropy(test)
     LIDentropy = LIDbigram.entropy(test)
     
