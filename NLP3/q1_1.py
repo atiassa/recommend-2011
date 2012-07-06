@@ -138,18 +138,25 @@ def generateVector(word,pos,clas):
     return vec
     
 def main():
-    train = conll2002.chunked_sents('esp.train')# In Spanish    
-#    train = conll2002.chunked_sents('esp.testa')# In Spanish
-    choosing_encoding(train)
-    cl , vectors = extract_features(train)
-    p = svm_problem([1,-1], [[1,0,1],[-1,0,-1]])  
+#    train = conll2002.chunked_sents('esp.train')# In Spanish    
+##    train = conll2002.chunked_sents('esp.testa')# In Spanish
+#    choosing_encoding(train)
+#    cl , vectors = extract_features(train)
+    x=[ [1,0,1],[-1,0,-1],[-1,0,-1], [9,10,222] ]
+    y=[1,1,-1,1]
+    prob = svm_problem( y,x)
     param = svm_parameter()
     param.kernel_type = 4
     param.C = 10
-    m = svm_model(p, param)
-    m.predict([1,1,1])
-    m.save('test.model')
-    m.predict([1,1,1])
+    
+    p_m = libsvm.svm_train(prob, param)
+    m = toPyModel(p_m)
+    p_labels, p_acc, p_vals = libsvm.svm_predict([1,-1], [[1,0,1],[-1,0,-1]],p_m)
+    print p_acc
+
+#    print m.predict([ 1,1, 1])
+#    print m.predict([ 10,0, 0])
+ 
     
 #    m = svmutil.svm_train(p,param)
     
