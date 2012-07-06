@@ -6,6 +6,7 @@ from my_simplify import *
 import matplotlib.pyplot as plt
 import numpy as np
 import q2_2
+from q2_1 import *
 
 def plot_histogram(hTitle,yTitle, fd):
     y = []
@@ -47,6 +48,13 @@ def Report_NP_statistics(treebank):
     plot_histogram("All NPs","distribution " , fd)
     plot_histogram("NPs under S","distribution " , fd_S)
     plot_histogram("NPs under VP ","distribution " , fd_VP)
+    div = KL_Divergence(MLEProbDist(fd),MLEProbDist(fd_S))
+    print "KL_Divergence between ALL-NP and NP-under-S = %f" % div
+    div = KL_Divergence(MLEProbDist(fd),MLEProbDist(fd_VP))
+    print "KL_Divergence between ALL-NP and NP-under-VP = %f" % div
+    div = KL_Divergence(MLEProbDist(fd),MLEProbDist(fd_S))
+    print "KL_Divergence between NP-under-S and NP-under-VP = %f" % div
+    
     
 def main():   
     Report_NP_statistics(treebank)

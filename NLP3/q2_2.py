@@ -2,7 +2,7 @@ import nltk
 import nltk.grammar as gram
 from nltk.probability import DictionaryProbDist , FreqDist
 from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
-import my_simplify
+from my_simplify import *
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -42,21 +42,18 @@ def pcfg_learn(treebank, n):
     productions = []
     treebank_interior_nodes = 0;
     nt = 0
-    for item in treebank.items:
-        if nt == n: break
-        for tree in treebank.parsed_sents(item):
-            if nt == n: break
-            tree = filter_NONE(tree)
-            if tree!= None:
-                treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
-                productions += tree.productions()
-                nt += 1
-            
+    for tree in treebank.parsed_sents2()[:n]:
+        tree = filter_NONE(tree)
+        if tree!= None:
+            treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            productions += tree.productions()
+            nt += 1
+        
     learned_pcfg = createWG( productions)
 
-    plot_dist_productions_by_frequency(productions)
-    print 'How many productions are learned from the trees? %d ' % len(learned_pcfg.productions())
-    print 'How many interior nodes were in the treebank?    %d ' % treebank_interior_nodes
+#    plot_dist_productions_by_frequency(productions)
+#    print 'How many productions are learned from the trees? %d ' % len(learned_pcfg.productions())
+#    print 'How many interior nodes were in the treebank?    %d ' % treebank_interior_nodes
     return  learned_pcfg
 
 #-- treebank is the nltk.corpus.treebank lazy corpus reader (simplified tags)
@@ -67,17 +64,14 @@ def pcfg_cnf_learn(treebank, n):
     treebank_interior_nodes = 0
     cnf_interior_nodes = 0
     nt = 0
-    for item in treebank.items:
-        if nt == n: break
-        for tree in treebank.parsed_sents(item):
-            if nt == n: break
-            tree = filter_NONE(tree)
-            if tree!= None:
-                treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
-                tree.chomsky_normal_form(horzMarkov = 2)
-                cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
-                productions += tree.productions()
-                nt += 1
+    for tree in treebank.parsed_sents2()[:n]:
+        tree = filter_NONE(tree)
+        if tree!= None:
+            treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            tree.chomsky_normal_form(horzMarkov = 2)
+            cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            productions += tree.productions()
+            nt += 1
             
     learned_pcfg_cnf = createWG(productions)
     
@@ -118,10 +112,7 @@ def cover_tree(grammar, tree):
 def count_misses(pcfg,treebank,n):
     misses = 0
     nt = 0
-    for item in treebank.items:
-        if nt == n: break
-        for tree in treebank.parsed_sents(item):
-            if nt == n: break
+    for tree in treebank.parsed_sents2()[:n]:
             tree = filter_NONE(tree)
             nt += 1
             if not cover_tree(pcfg, tree):
@@ -135,15 +126,10 @@ def count_misses(pcfg,treebank,n):
 # as the number of rules is reduced (sample every 10% of the size of the grammar).   
 def plot_misses(pcfg,treebank,n):
     productions = []
-    nt = 0
-    for item in treebank.items:
-        if nt == n: break
-        for tree in treebank.parsed_sents(item):
-            if nt == n: break
-            tree = filter_NONE(tree)
-            if tree!= None:
-                productions += tree.productions()
-                nt += 1
+    for tree in treebank.parsed_sents2()[:n]:
+        tree = filter_NONE(tree)
+        if tree!= None:
+            productions += tree.productions()
     fk= FreqDist(productions).keys()
     
     x = []
@@ -170,10 +156,10 @@ def plot_misses(pcfg,treebank,n):
 def main():    
     n = 1000
     print "--PCFG--" 
-    learned_pcfg = pcfg_learn(my_simplify.treebank, n)
-    plot_misses(learned_pcfg,my_simplify.treebank,n) 
+    learned_pcfg = pcfg_learn(treebank, n)
+    plot_misses(learned_pcfg,treebank,n) 
     print "\n--CNF PCFG--" 
-    learned_pcfg_cnf = pcfg_cnf_learn(my_simplify.treebank, n) 
+    learned_pcfg_cnf = pcfg_cnf_learn(treebank, n) 
     
 if __name__ == '__main__':
     main() 

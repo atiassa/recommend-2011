@@ -44,34 +44,37 @@ from nltk.tree import Tree
 import numpy as np
 import math
 
-LhsProbDist = {}
+
 
 def makeLhrProbDict(grammar):
+    LhsProbDist = {}
     for nonTr in grammar.productions():
         nonTr_productions = grammar.productions(nonTr.lhs())
         dict = {}
         for pr in nonTr_productions:
             dict[pr.rhs()] = pr.prob()
-        
         probDist = DictionaryProbDist(dict)
         LhsProbDist[nonTr.lhs()] = probDist
+    return LhsProbDist
 
 # return a tree sampled from the language described by the grammar
 def pcfg_generate(grammar):
     start = grammar.start()
-    return generate_one(grammar, [start])
+    pd = makeLhrProbDict(grammar)
+    t = generate_one(grammar, [start],pd)
+    return t
 
-def generate_one(grammar, items):
+def generate_one(grammar, items ,pd ):
     if len(items) == 1 :
         if isinstance(items[0], Nonterminal):
-            rhs = LhsProbDist[items[0]].generate()
-            return Tree(str(items[0]), generate_one(grammar, rhs))
+            rhs = pd[items[0]].generate()
+            return Tree(str(items[0]), generate_one(grammar, rhs,pd))
         else:
             return items
     else:
         l = [] 
         for r in items:
-            l.append(generate_one(grammar, [r]))
+            l.append(generate_one(grammar, [r],pd))
         return l
 
 # - Generate 1,000 random sentences using nltk.grammar.toy_pcfg2
@@ -79,6 +82,7 @@ def generate_one(grammar, items):
 # - For each distribution, compute the KL-divergence between the MLE estimation of the probability
 #      distribution constructed on your test corpus and toy_pcfg2.  
 def validate_pcfg_generate(grammar):
+    pd = makeLhrProbDict(grammar)
     productions = []
     cfd = ConditionalFreqDist()
     
@@ -91,7 +95,7 @@ def validate_pcfg_generate(grammar):
         
     for c in cfd.conditions():
         p = MLEProbDist(cfd[c])
-        q = LhsProbDist[c]
+        q = pd[c]
         div = KL_Divergence(p,q)
         print "KL_Divergence for %s = %f" %(c , div)
     
@@ -117,14 +121,12 @@ def KL_Divergence(p,q):
     div = 0
     for pi , qi in zip(Ptag,Qtag):
         d = pi / qi
-        if (d != 0):
+        if (d > 0):
             div += pi * math.log(d) 
-    return div
-    
+    return div  
 
 def main():
     grammar = toy_pcfg2
-    LhsProbDist = makeLhrProbDict(grammar)
     validate_pcfg_generate(grammar)
     
 if __name__ == '__main__':
@@ -153,7 +155,7 @@ import nltk
 import nltk.grammar as gram
 from nltk.probability import DictionaryProbDist , FreqDist
 from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
-from nltk.corpus import LazyCorpusLoader, BracketParseCorpusReader , simplify_wsj_tag
+from my_simplify import *
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -192,14 +194,14 @@ def createWG(productions):
 def pcfg_learn(treebank, n):
     productions = []
     treebank_interior_nodes = 0;
-    
-    for item in treebank.items[:n]:
-        for tree in treebank.parsed_sents(item):
+    nt = 0
+    for tree in treebank.parsed_sents2()[:n]:
+        tree = filter_NONE(tree)
+        if tree!= None:
             treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
-            tree = filter_NONE(tree)
-            if tree!= None:
-                productions += tree.productions()
-            
+            productions += tree.productions()
+            nt += 1
+        
     learned_pcfg = createWG( productions)
 
     plot_dist_productions_by_frequency(productions)
@@ -214,15 +216,15 @@ def pcfg_cnf_learn(treebank, n):
     productions = []
     treebank_interior_nodes = 0
     cnf_interior_nodes = 0
-    
-    for item in treebank.items[:n]:
-        for tree in treebank.parsed_sents(item):
+    nt = 0
+    for tree in treebank.parsed_sents2()[:n]:
+        tree = filter_NONE(tree)
+        if tree!= None:
             treebank_interior_nodes += len(tree.productions()) + len(tree.leaves())
-            tree = filter_NONE(tree)
-            if tree!= None:
-                tree.chomsky_normal_form(horzMarkov = 2)
-                cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
-                productions += tree.productions()
+            tree.chomsky_normal_form(horzMarkov = 2)
+            cnf_interior_nodes += len(tree.productions()) + len(tree.leaves())
+            productions += tree.productions()
+            nt += 1
             
     learned_pcfg_cnf = createWG(productions)
     
@@ -262,9 +264,10 @@ def cover_tree(grammar, tree):
 # return the number of trees "missed" by the new pcfg
 def count_misses(pcfg,treebank,n):
     misses = 0
-    for item in treebank.items[:n]:
-        for tree in treebank.parsed_sents(item):
+    nt = 0
+    for tree in treebank.parsed_sents2()[:n]:
             tree = filter_NONE(tree)
+            nt += 1
             if not cover_tree(pcfg, tree):
                 misses +=1
     return misses
@@ -276,11 +279,10 @@ def count_misses(pcfg,treebank,n):
 # as the number of rules is reduced (sample every 10% of the size of the grammar).   
 def plot_misses(pcfg,treebank,n):
     productions = []
-    for item in treebank.items[:n]:
-        for tree in treebank.parsed_sents(item):
-            tree = filter_NONE(tree)
-            if tree!= None:
-                productions += tree.productions()
+    for tree in treebank.parsed_sents2()[:n]:
+        tree = filter_NONE(tree)
+        if tree!= None:
+            productions += tree.productions()
     fk= FreqDist(productions).keys()
     
     x = []
@@ -305,9 +307,7 @@ def plot_misses(pcfg,treebank,n):
     
      
 def main():    
-    n = 20
-    treebank = LazyCorpusLoader('treebank/combined', BracketParseCorpusReader, 
-                                r'wsj_.*\.mrg', tag_mapping_function=simplify_wsj_tag)
+    n = 1000
     print "--PCFG--" 
     learned_pcfg = pcfg_learn(treebank, n)
     plot_misses(learned_pcfg,treebank,n) 
@@ -321,30 +321,255 @@ if __name__ == '__main__':
 <h4>Data Exploration and Validation</h4>
 Output:<br>
 --PCFG--<br>
-How many productions are learned from the trees? 2982<br> 
-How many interior nodes were in the treebank?    16543<br>
+How many productions are learned from the trees? 14049<br> 
+How many interior nodes were in the treebank?    201575 <br>
 <img src="q2_2a.PNG" width="600" height="480" />
+<img src="q2_2aa.PNG" width="600" height="480" />
 <img src="q2_2b.PNG" width="600" height="480" />
 
 <h4>CNF PCFG</h4>
 Output:<br>
---PCFG--<br>
-How many productions are learned from the trees? 2982<br> 
-How many interior nodes were in the treebank?    16543 <br>
-
---CNF PCFG--
-How many productions are learned from the CNF trees?   3535 
-How many interior nodes were in the original treebank? 16543 
-How many interior nodes were in the CNF treebank?      17373
 
 <a name="q2.3"></a> 
 <h3>Question 2.3: Test CFG Independence Assumptions</h3> 
 
+<pre>
+import nltk
+import nltk.grammar as gram
+from nltk.probability import DictionaryProbDist , FreqDist
+from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
+from my_simplify import *
+import matplotlib.pyplot as plt
+import numpy as np
+import q2_2
+from q2_1 import *
+
+def plot_histogram(hTitle,yTitle, fd):
+    y = []
+    sumall = sum(fd.values())
+    for k in fd.keys()[:5]:
+        y.append(float(fd[k])/sumall)
+    plt.bar(np.arange(5),y)
+    plt.xticks( np.arange(5) + 0.5, fd.keys()[:5])
+    plt.title(hTitle )
+    plt.ylabel(yTitle)
+    plt.show()
+
+def dist_NP(above , tree , p , pp):
+    if isinstance(tree, str):
+        if ((pp == above) | (above == "")) & (p == "NP"):
+            return [tree]
+        else: return []
+    l = []
+    if ((pp == above) | (above == "")) & (p == "NP"):
+        l.append(tree.node)
+    for child in tree[0:]:
+        l.extend(dist_NP(above , child,tree.node,p))
+        
+    return l
+         
+def Report_NP_statistics(treebank):
+    l = []
+    l_S = []
+    l_VP = []
+    for tree in treebank.parsed_sents2():
+        tree = q2_2.filter_NONE(tree)
+        if tree!= None:
+            l.extend(dist_NP("" , tree,"X","X"))
+            l_S.extend(dist_NP("S" , tree,"X","X"))
+            l_VP.extend(dist_NP("VP" , tree,"X","X"))
+    fd = FreqDist(l)
+    fd_S = FreqDist(l_S)
+    fd_VP = FreqDist(l_VP)
+    plot_histogram("All NPs","distribution " , fd)
+    plot_histogram("NPs under S","distribution " , fd_S)
+    plot_histogram("NPs under VP ","distribution " , fd_VP)
+    div = KL_Divergence(MLEProbDist(fd),MLEProbDist(fd_S))
+    print "KL_Divergence between ALL-NP and NP-under-S = %f" % div
+    div = KL_Divergence(MLEProbDist(fd),MLEProbDist(fd_VP))
+    print "KL_Divergence between ALL-NP and NP-under-VP = %f" % div
+    div = KL_Divergence(MLEProbDist(fd),MLEProbDist(fd_S))
+    print "KL_Divergence between NP-under-S and NP-under-VP = %f" % div
+    
+def main():   
+    Report_NP_statistics(treebank)
+    
+if __name__ == '__main__':
+    main()  
+</pre>
+<img src="q2_3all.PNG" width="600" height="480" /><br>
+<img src="q2_3S.PNG" width="600" height="480" /><br>
+<img src="q2_3VP.PNG" width="600" height="480" /><br>
+KL_Divergence between ALL-NP and NP-under-S = -0.009770<br>
+KL_Divergence between ALL-NP and NP-under-VP = 0.046677<br>
+KL_Divergence between NP-under-S and NP-under-VP = -0.009770<br>
+
 <a name="q2.4"></a> 
 <h3>Question 2.4: Learn a bigram Language Model</h3> 
+<pre>
+import nltk
+import nltk.grammar as gram
+from nltk.probability import ConditionalFreqDist , FreqDist , ConditionalProbDist,  MLEProbDist, LidstoneProbDist
+from  my_simplify import *
+import numpy as np
+import math
+import random
+from q2_2 import *
 
-<a name="q2.5"></a> 
+class BigramModel():
+    def __init__(self, corpus, n, estimator=None): 
+        if estimator is None: 
+            estimator = lambda fdist, bins: MLEProbDist(fdist)
+        bi = []
+        self._l = []
+        for tree in corpus[:n]:
+            ts =  tree.leaves()
+            sent = ['START'] + ts
+            bi += nltk.bigrams(sent)
+            self._l.append(len(sent))
+            
+        cfd = ConditionalFreqDist(bi)
+        self._model = ConditionalProbDist(cfd, estimator, len(cfd))
+
+    def prob(self, word, context):
+        contpd = self._model[context]
+        if word in contpd.samples():
+            if contpd.prob(word) == 0:
+                return 1
+            return  contpd.prob(word)
+        else:
+            return 1
+
+    def logprob(self, word, context):
+        return -math.log(self.prob(word, context), 2) 
+
+    def generate(self, context="START"):
+        wordsNum = random.choice(self._l) 
+        text = [context]
+        for i in range(wordsNum):
+            text.append(self._generate_one(text[-1]))
+        return text
+
+
+    def _generate_one(self, context):
+        if context == '.':
+            context = 'START'
+        if context in self._model.conditions():
+            return self._model[context].generate()
+
+    def entropy(self, text):
+        e = 0.0
+        for i in range(1, len(text)):
+            context = text[-1] 
+            token = text[i]
+            e += self.logprob(token, context)
+        return e
+
+#-- return a bigram model acquired from the corpus
+#-- n is the number of trees from the corpus to use for training
+#-- estimator is a function that takes a ConditionalFreqDist and returns a ConditionalProbDist.  
+#-- By default, use None - meaning, use the MLEProbDist estimator.
+#-- return a bigram model 
+def bigram_learn(corpus, n, estimator=None):
+    return BigramModel(corpus, n, estimator)
+
+def calc_entropy(corpus, train_size, bigram):
+    sigma = 0
+    length = 0
+    for sent in corpus[train_size:]:
+        sigma += bigram.entropy(" ".join(sent.leaves()))
+        length += 1
+    return float(sigma) / length
+
+def main():
+    corpus = []
+    for tree in treebank.parsed_sents2():
+        tree = filter_NONE(tree)
+        if tree!= None:
+            corpus.append(tree)
+    treeNum = len(corpus)
+                  
+    LIDestimator = lambda fdist, bins: LidstoneProbDist(fdist, 0.2,bins)
+    
+    train_size = int(treeNum*0.8)
+    MLEbigram = bigram_learn(corpus, train_size) #  MLEestimator estimator
+    LIDbigram = bigram_learn(corpus, train_size , LIDestimator)
+    
+    MLEentropy = calc_entropy(corpus, train_size, MLEbigram)
+    LIDentropy = calc_entropy(corpus, train_size, LIDbigram)
+    print "MLE entropy = %f" %MLEentropy 
+    print "LID entropy = %f" %LIDentropy
+    
+    for i in range(50):
+        print str(i+1) +" " + " ".join(MLEbigram.generate()[1:]) 
+    
+if __name__ == '__main__':
+    main() 
+</pre>
+
+<h4>Validation</h4>
+Output:<br>
+MLE entropy = 3.204016<br>
+LID entropy = 4.658016<br>
+
+1 She says the sphere . As partisans of the firm 's dominant issue , says the Vicar Hummerstone says Myron Genel warns that the company said Judge Curry ordered by<br>
+2 Eaton is not said Keith Collins , a 1934 law changed . The House will control point lower . But<br>
+3 All kinds of Bank and Saudi Arabia , '' Rep. James A. Taylor . On Tuesday . The American Medical Association from 46 % in 1987 .<br>
+4 Backe Group architects propose using peripheral equipment .<br>
+5 And recessionary environments , Australia 's<br>
+6 As an era of smothering other hand , Sea Containers is almost seems to 7 5\/8 % boosts proposed and Boston because they made some Old Guard 's Money shall be inviting more decisive<br>
+7 Guaranteed minimum roof-crush resistance at the aircraft . Mr. Hammond worries about a local councils are suddenly poorly under investigation under an imminent recession . Funded by Article II . `` two-time-losers '' fiscal year , that<br>
+8 But in Chicago , accounting for low-altitude navigation and eliminating about 4.1 million on an old bridge '' even keep its fourth quarter , '' refused to disgorge $ 23.72 billion and raised through a supportive element in preliminary stages<br>
+9 Currently , and they planned . Since the show ,<br>
+10 The defense lawyers said person for almost offer its quarterly refunding in its decision be able to the<br>
+11 And it downgraded CS First Boston 's program . In this month before those publicly and that it would remain fully<br>
+12 Rep. Markey , in today spend $<br>
+13 They cite such clues ,<br>
+14 He cites three years on equity could be limited in college entrance examination to review by heavy trading . Friends of the defendants are likely to close at 40 range from 6.40 % to the compromise agreed to help U.S. cars , and museums are<br>
+15 The 1988 activity : badly dressed , which in October ,<br>
+16 Their own $ 1,298 . Labor unions and will take over their earnings performance . In a `` A Place in Western Union had been highly regarded director of its light-truck line to pay , ''<br>
+17 Program trading now . They argue that only some companies raise another example , '' in the London share ,<br>
+18 But he heads is sparking fears that 's caught . Although she spotted a high and others at next year earlier and from a wheel-loader manufacturing sector is whether public elevators , for Great Crash of the Indianapolis<br>
+19 A Wild Sheep Chase '' in Napa Valley Federal Energy Regulatory Commission , Ohio ... . The incentive for judges ease the purchase a third-quarter loss of 112.9 to Audit Bureau . She was involved more people into<br>
+20 Volatility surrounding the nation 's core business conditions in October , it or $ 130 million of the minimum wage at more about this year 's Market professionals . Homeless '' Mrs.<br>
+21 This compares with certain sectors , and more slowly amass a vast majority were clobbered more to pick up<br>
+22 `` And it . At the details of my money manager of the<br>
+23 Crude as well because it 's effort to # 130 million '' type of Northampton , `` We have too far futures at that it . The IRS officials . We 're talking tough . $ 250 million<br>
+24 For people who pay , the coming closer to conference<br>
+25 Fees 1 slipped 5 million guilders -LRB- although it had given day . With slower growth<br>
+26 -- the Souper Combo microwave product like Greenville High School Publishing Co. , if a multibillion-dollar River Danube dam ca n't expect 1989 . In an amendment , La Solaia , at 2691.19 . But the normal here as to reprint such proposal regarding business and marketing of peripheral units . The benchmark 30-year bond prices closed upv
+27 But the company 's real-estate firm expects in getting results in<br>
+28 Mrs. Yeargin wanted to young children and industrial<br>
+29 Sales fell . Most boosters claim to make certain incentive-backed issues were reported a fixed , '' she was foundering under the new<br>
+30 The following since last year , in Article II owners . So did fail to an off-off election are no comment further charges that Washington ,<br>
+31 From Italy , gets the sewer system to 14<br>
+32 `` The new USIA say they say it a share , drive many of stock-market crash . First Boston , both ways of some country wants the recipient country funds<br>
+33 But since March . It does n't even though the new orders would `` The loudest of intellectual property -- Tokyo to mature 1992-1999 , the globe<br>
+34 `` through the individual investors showed that some concern was maintained that the better products at Greenville High test<br>
+35 `` until next spring and 2019 , and chief investment expert Peter Anthony Houston -- essentially the Courter 's corporate market is just as proof that wholesale -LRB- Schweiz -RRB- -- a $ 70 U.K. frozen<br>
+36 Meanwhile , crocidolite was Northeast Bancorp , '' said it . Svenska Handelsbanken . Those dividend growth are likely to $ 2.65 . Soon , a variety<br>
+37 Mr. McGovern was awfully expensive , according to 361,376 units . These prices ,<br>
+38 President Corazon Aquino -- more romanticized view , vice minister 's . He also been used . He and brightest , but I draw<br>
+39 Legislating new long-term play to be the amount issued by a similar bid by a share . The statistics office of $ 250 ! '' she could be able to withdraw the surprise of speculative buying<br>
+40 One could carry the moment . There have made corporate profits have taken measures , reducing costs and its F-series Crew Cab pickups in Washington every vicar and moons of trading companies of 7.20 % . What 's tenure . I get something equally<br>
+41 Big Board 's 500 million to $ 1,000 enclosed railcars , casting a<br>
+42 Asked whether users are thought should be interesting one unit of # 34 million from an advertising standpoint , you flush your logic : But despite a car<br>
+43 But Sony . To the freedom and Paul 's school and it lacked the school of English novelist Dorothy Arighi of Georgia Gulf said that data .<br>
+44 The minority argument , a bilingual medical devices , higher rate of the elementary necessities of the questions which to be banned . The two years old , the category is discontinuing its electricity rates , are never made the yield from Australia next move that<br>
+45 A Waste Management Inc. and Connecticut banks ' harsh exchanges . In this rhetoric as Tokyo comes of four<br>
+46 A few clients on the world . Once we ended Tuesday by lawmakers . Today taxpayers should spackle . The company , can fully accurate . Sales fell 1.6 % from current vintages are all<br>
+47 Card holders more than drink too volatile stock and is an appropriations , seem rather than those segments of recent industry enters the AT&T researchers say `` Cosby ' '' that<br>
+48 Your $ 750 million , will provide a $ 6,500 tree that can do n't clear the old . But for years ago<br>
+49 `` We 're paid for comment on wheels ,<br>
+50 The department said Dr. Wright says Mrs. Yeargin she gave quick approval of recyclability<br>
+<br>
+<a name="q2.5"></a>
 <h3>Question 2.5: Validation of PCFG Generated text using an n-gram Model</h3> 
+<pre>
+
+</pre>
+
+
 
 <BR> 
 <HR>

@@ -4,34 +4,37 @@ from nltk.tree import Tree
 import numpy as np
 import math
 
-LhsProbDist = {}
+
 
 def makeLhrProbDict(grammar):
+    LhsProbDist = {}
     for nonTr in grammar.productions():
         nonTr_productions = grammar.productions(nonTr.lhs())
         dict = {}
         for pr in nonTr_productions:
             dict[pr.rhs()] = pr.prob()
-        
         probDist = DictionaryProbDist(dict)
         LhsProbDist[nonTr.lhs()] = probDist
+    return LhsProbDist
 
 # return a tree sampled from the language described by the grammar
 def pcfg_generate(grammar):
     start = grammar.start()
-    return generate_one(grammar, [start])
+    pd = makeLhrProbDict(grammar)
+    t = generate_one(grammar, [start],pd)
+    return t
 
-def generate_one(grammar, items):
+def generate_one(grammar, items ,pd ):
     if len(items) == 1 :
         if isinstance(items[0], Nonterminal):
-            rhs = LhsProbDist[items[0]].generate()
-            return Tree(str(items[0]), generate_one(grammar, rhs))
+            rhs = pd[items[0]].generate()
+            return Tree(str(items[0]), generate_one(grammar, rhs,pd))
         else:
             return items
     else:
         l = [] 
         for r in items:
-            l.append(generate_one(grammar, [r]))
+            l.append(generate_one(grammar, [r],pd))
         return l
 
 # - Generate 1,000 random sentences using nltk.grammar.toy_pcfg2
@@ -39,6 +42,7 @@ def generate_one(grammar, items):
 # - For each distribution, compute the KL-divergence between the MLE estimation of the probability
 #      distribution constructed on your test corpus and toy_pcfg2.  
 def validate_pcfg_generate(grammar):
+    pd = makeLhrProbDict(grammar)
     productions = []
     cfd = ConditionalFreqDist()
     
@@ -51,7 +55,7 @@ def validate_pcfg_generate(grammar):
         
     for c in cfd.conditions():
         p = MLEProbDist(cfd[c])
-        q = LhsProbDist[c]
+        q = pd[c]
         div = KL_Divergence(p,q)
         print "KL_Divergence for %s = %f" %(c , div)
     
@@ -77,13 +81,12 @@ def KL_Divergence(p,q):
     div = 0
     for pi , qi in zip(Ptag,Qtag):
         d = pi / qi
-        if (d != 0):
+        if (d > 0):
             div += pi * math.log(d) 
     return div  
 
 def main():
     grammar = toy_pcfg2
-    LhsProbDist = makeLhrProbDict(grammar)
     validate_pcfg_generate(grammar)
     
 if __name__ == '__main__':

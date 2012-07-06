@@ -1,75 +1,98 @@
 import nltk
 import nltk.grammar as gram
-from nltk.probability import ConditionalFreqDist , FreqDist , DictionaryProbDist ,ProbDistI,  MLEProbDist, LidstoneProbDist
-from nltk.grammar import WeightedGrammar , WeightedProduction , Nonterminal
-import my_simplify
-import matplotlib.pyplot as plt
+from nltk.probability import ConditionalFreqDist , FreqDist , ConditionalProbDist,  MLEProbDist, LidstoneProbDist
+from  my_simplify import *
 import numpy as np
-from nltk.model import NgramModel
+import math
+import random
+from q2_2 import *
 
-# return the number of trees in the whole treebank
-def treebank_tree_num(treebank):
-    count = 0
-    for item in treebank.items:
-        count += len( treebank.parsed_sents(item))
-    return count
+class BigramModel():
+    def __init__(self, corpus, n, estimator=None): 
+        if estimator is None: 
+            estimator = lambda fdist, bins: MLEProbDist(fdist)
+        bi = []
+        self._l = []
+        for tree in corpus[:n]:
+            ts =  tree.leaves()
+            sent = ['START'] + ts
+            bi += nltk.bigrams(sent)
+            self._l.append(len(sent))
+            
+        cfd = ConditionalFreqDist(bi)
+        self._model = ConditionalProbDist(cfd, estimator, len(cfd))
 
-# return list of the remain words from treebank after n trees counted  
-def get_treebank_test_sent(treebank, n):
-    nt = 0
-    test = []
-    for item in treebank.items:
-        for tree in treebank.parsed_sents(item):
-            if nt >= n:
-                test.extend(['START']+tree.leaves())
-            nt += 1
-    return test
+    def prob(self, word, context):
+        contpd = self._model[context]
+        if word in contpd.samples():
+            if contpd.prob(word) == 0:
+                return 1
+            return  contpd.prob(word)
+        else:
+            return 1
 
-# generate n sentences from bigram , each sent have 30 words
-def generate_sent(bigram , n):
-    s = []
-    for i in range(0,n):
-        s.append(bigram.generate(30))
-    return s
+    def logprob(self, word, context):
+        return -math.log(self.prob(word, context), 2) 
+
+    def generate(self, context="START"):
+        wordsNum = random.choice(self._l) 
+        text = [context]
+        for i in range(wordsNum):
+            text.append(self._generate_one(text[-1]))
+        return text
+
+
+    def _generate_one(self, context):
+        if context == '.':
+            context = 'START'
+        if context in self._model.conditions():
+            return self._model[context].generate()
+
+    def entropy(self, text):
+        e = 0.0
+        for i in range(1, len(text)):
+            context = text[-1] 
+            token = text[i]
+            e += self.logprob(token, context)
+        return e
 
 #-- return a bigram model acquired from the corpus
 #-- n is the number of trees from the corpus to use for training
 #-- estimator is a function that takes a ConditionalFreqDist and returns a ConditionalProbDist.  
 #-- By default, use None - meaning, use the MLEProbDist estimator.
 #-- return a bigram model 
-def bigram_learn(treebank, n, estimator=None):
-    if estimator is None:
-        def e(fdist, bins):
-            MLEProbDist(fdist)
-        estimator = e
-    nt = 0
-    train = []
-    for item in treebank.items:
-        if nt > n: break
-        for tree in treebank.parsed_sents(item):
-            if nt > n: break
-            train.extend(['START']+tree.leaves())
-            nt += 1
-    
-    return NgramModel(2, train, estimator)
+def bigram_learn(corpus, n, estimator=None):
+    return BigramModel(corpus, n, estimator)
+
+def calc_entropy(corpus, train_size, bigram):
+    sigma = 0
+    length = 0
+    for sent in corpus[train_size:]:
+        sigma += bigram.entropy(" ".join(sent.leaves()))
+        length += 1
+    return float(sigma) / length
 
 def main():
-    treeNum = treebank_tree_num(my_simplify.treebank)
+    corpus = []
+    for tree in treebank.parsed_sents2():
+        tree = filter_NONE(tree)
+        if tree!= None:
+            corpus.append(tree)
+    treeNum = len(corpus)
+                  
+    LIDestimator = lambda fdist, bins: LidstoneProbDist(fdist, 0.2,bins)
     
-    LIDestimator = lambda fdist, bins: LidstoneProbDist(fdist, 0.2)
+    train_size = int(treeNum*0.8)
+    MLEbigram = bigram_learn(corpus, train_size) #  MLEestimator estimator
+    LIDbigram = bigram_learn(corpus, train_size , LIDestimator)
     
-    MLEbigram = bigram_learn(my_simplify.treebank, treeNum*0.8) #  MLEestimator estimator
-    LIDbigram = bigram_learn(my_simplify.treebank, treeNum*0.8 , LIDestimator)
+    MLEentropy = calc_entropy(corpus, train_size, MLEbigram)
+    LIDentropy = calc_entropy(corpus, train_size, LIDbigram)
+    print "MLE entropy = %f" %MLEentropy 
+    print "LID entropy = %f" %LIDentropy
     
-    test = get_treebank_test_sent(my_simplify.treebank, treeNum*0.8)
-    MLEentropy = MLEbigram.entropy(test)
-    LIDentropy = LIDbigram.entropy(test)
-    
-    if MLEentropy < LIDentropy:
-        sents = generate_sent(MLEbigram , 50)
-    else : 
-        sents = generate_sent(LIDbigram , 50)
-    print sents
+    for i in range(50):
+        print str(i+1) +" " + " ".join(MLEbigram.generate()[1:]) 
     
 if __name__ == '__main__':
     main() 
