@@ -56,7 +56,7 @@ from htmlentitydefs import name2codepoint
 
 ### PARAMS ####################################################################
 
-prefix = 'http://it.wikipedia.org/wiki/'
+prefix = 'http://he.wikisource.org/wiki/'
 
 ##
 # Whether to preseve links in output
@@ -596,6 +596,7 @@ minFileSize = 200 * 1024
 
 def main():
     global keepLinks, keepSections, prefix
+    sys.argv = ["WikiExtractor.py", "-cb","250K" ,"-o" ,"extracted"]
     script_name = os.path.basename(sys.argv[0])
 
     try:
@@ -652,7 +653,8 @@ def main():
             return
 
     output_splitter = OutputSplitter(compress, file_size, output_dir)
-    process_data(sys.stdin, output_splitter)
+    f = open("hewikisource-20120628-pages-articles.xml")
+    process_data(f, output_splitter)
     output_splitter.close()
 
 if __name__ == '__main__':
