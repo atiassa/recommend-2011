@@ -1,7 +1,5 @@
 package extractWikiPages;
 
-import java.io.FileInputStream;
-import java.util.Properties;
 import java.util.Vector;
 
 import de.tudarmstadt.ukp.wikipedia.api.Category;
