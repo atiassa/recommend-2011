@@ -12,7 +12,7 @@ import de.tudarmstadt.ukp.wikipedia.api.exception.WikiInitializationException;
 
 public class WikiData {
 	
-	private final int ARTICLES_NUM = 100;
+	private final int ARTICLES_NUM = 5000;
 	private Vector<Page> _articles;
 	
 	public WikiData(int N_words , int M_outgoing_links){
@@ -51,7 +51,7 @@ public class WikiData {
 					openlist.addAll(page.getOutlinks());
 			
 			//System.out.println(page.getTitle()+" : links "+page.getNumberOfOutlinks() +" : words "+page.getText().split("\\s+").length);
-			if(page.getNumberOfOutlinks() <= 15 & page.getText().split("\\s+").length >= n_words){
+			if(page.getNumberOfOutlinks() <= m_outgoing_links & page.getText().split("\\s+").length >= n_words){
 				_articles.add(page);
 				System.out.println(_articles.size() + " ======== "+ page.getTitle());
 				//System.out.println( page.getText());
