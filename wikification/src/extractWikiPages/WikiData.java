@@ -12,7 +12,7 @@ import de.tudarmstadt.ukp.wikipedia.api.exception.WikiInitializationException;
 
 public class WikiData {
 	
-	private final int ARTICLES_NUM = 5000;
+	private final int ARTICLES_NUM = 1;
 	private Vector<Page> _articles;
 	
 	public WikiData(int N_words , int M_outgoing_links){
