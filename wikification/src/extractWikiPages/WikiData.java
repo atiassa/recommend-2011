@@ -53,7 +53,7 @@ public class WikiData {
 			//System.out.println(page.getTitle()+" : links "+page.getNumberOfOutlinks() +" : words "+page.getText().split("\\s+").length);
 			if(page.getNumberOfOutlinks() <= m_outgoing_links & page.getText().split("\\s+").length >= n_words){
 				_articles.add(page);
-				System.out.println(_articles.size() + " ======== "+ page.getTitle());
+				//System.out.println(_articles.size() + " ======== "+ page.getTitle());
 				//System.out.println( page.getText());
 			}
 				
