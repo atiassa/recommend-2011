@@ -1,4 +1,11 @@
 package extractWikiPages;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Vector;
+
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
@@ -17,7 +24,45 @@ public class Linguistic {
 	}
 	
 	public static String segmentationAndStemming(String text){
+		//first we need to use the package to split the prefixes and suffixes.
+		//TODO
 		
-		return null;
+		//remove all the stop words from the text - after the split.
+		text = Linguistic.removeStopWords(text);
+		return text;
+	}
+	
+	private static String removeStopWords(String text){
+		Vector<String> stopWords = readStopWords();
+		String[] textWords = text.split(" ");
+		String res = "";
+		for (int i=0; i<textWords.length; i++){
+			if (!stopWords.contains(textWords[i])){
+				res = res + textWords[i];
+				if (i < textWords.length - 1)
+					res = res + " ";
+			}
+		}
+		return res;
+	}
+
+	private static Vector<String> readStopWords() {
+		Vector<String> stopWords = new Vector<String>();
+		try {
+			FileReader fr = new FileReader("he-stopwords.txt");
+			BufferedReader br = new BufferedReader(fr);
+			String s = br.readLine();
+			while (s != null){
+				stopWords.add(s);
+				s = br.readLine();
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println("stop words file not found");
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("can't read line from stop words file");
+			e.printStackTrace();
+		}
+		return stopWords;
 	}
 }
