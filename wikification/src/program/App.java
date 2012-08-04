@@ -1,6 +1,5 @@
 package program;
 
-import extractWikiPages.Linguistic;
 import extractWikiPages.WikiCfd;
 import extractWikiPages.WikiData;
 
