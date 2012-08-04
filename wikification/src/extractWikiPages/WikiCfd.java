@@ -19,7 +19,9 @@ public class WikiCfd {
 		this._fd = new HashMap<String, HashMap<String,Integer>>();
 	}
 	
-	//build the freqDist fd
+	/*
+	 * build the freqDist fd where key is term and values are links
+	 */
 	public void training(Vector<Page> articles){
 		for(Page p : articles){
 			String text = p.getText();
@@ -37,13 +39,16 @@ public class WikiCfd {
 			    	String t = link.getTarget();
 			    	t= t.replace("_", " ");
 			    	addToMap(link.getText(),t);
-			        System.out.println("[" + link.getText()+" |"+t+"]");
+			        //System.out.println("[" + link.getText()+" |"+t+"]");
 			    }
 			}
-			System.out.println("");
 		}
 	}
 
+	/*
+	 * add increase link value in tne term key by 1
+	 * create new one if it not exists in hash
+	 */
 	private void addToMap(String term, String link) {
 		if(_fd.containsKey(term)){
 			if(_fd.get(term).containsKey(link))
@@ -58,5 +63,29 @@ public class WikiCfd {
 		}
 	}
 
+
+	/*
+	 * return the link with the max value from the values related to the key "term"
+	 */
+	public String getMax(String term) {
+		if(_fd.containsKey(term)){
+			HashMap<String, Integer> h = _fd.get(term);
+			Integer maxv = Integer.MIN_VALUE;
+			String maxl = "";
+			for (String link : h.keySet()){
+				Integer v = h.get(link);
+				if(v.compareTo(maxv) > 0){
+					maxv = v;
+					maxl = link;
+				}
+			}
+			return maxl;
+		}
+		return null;
+	}
+
+	public HashMap<String, HashMap<String, Integer>> getCfd() {
+		return _fd;
+	}
 
 }

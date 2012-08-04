@@ -12,7 +12,7 @@ import de.tudarmstadt.ukp.wikipedia.api.exception.WikiInitializationException;
 
 public class WikiData {
 	
-	private final int ARTICLES_NUM = 10;
+	private final int ARTICLES_NUM = 500;
 	private Vector<Page> _articles;
 	
 	public WikiData(int N_words , int M_outgoing_links){
@@ -20,7 +20,6 @@ public class WikiData {
 		try {
 			extractPages(N_words ,M_outgoing_links);
 		} catch (WikiApiException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	
@@ -39,6 +38,7 @@ public class WikiData {
 	 */
 	private void extractPages(int n_words, int m_outgoing_links) throws WikiApiException {
 		Wikipedia wiki = createWiki();
+		System.out.println("Bulding wikipedia data with "+ARTICLES_NUM+" articles.");
 		Page page;
 		Category cat =  wiki.getCategory("יונקים");
 		Vector<Page> openlist = new Vector<Page>();
@@ -50,15 +50,13 @@ public class WikiData {
 			if(openlist.size()<1000)
 					openlist.addAll(page.getOutlinks());
 			
-			//System.out.println(page.getTitle()+" : links "+page.getNumberOfOutlinks() +" : words "+page.getText().split("\\s+").length);
 			if(page.getNumberOfOutlinks() <= m_outgoing_links & page.getText().split("\\s+").length >= n_words){
 				_articles.add(page);
-				//System.out.println(_articles.size() + " ======== "+ page.getTitle());
-				//System.out.println( page.getText());
+				if(_articles.size()%10 ==0)
+					System.out.println("  get so far : "+_articles.size());
 			}
 				
 		}
-		
 	}
 
 	/*
