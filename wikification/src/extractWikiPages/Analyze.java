@@ -26,7 +26,6 @@ public class Analyze {
 		return null;
 	}
 	
-	//TODO
 	public double getAccuracy(Vector<Page> test){
 		int hits = 0;
 		int total = 0;
