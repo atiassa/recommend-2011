@@ -1,5 +1,6 @@
 package extractWikiPages;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -14,17 +15,24 @@ public abstract class WikiDecision {
 	// Decide to which link we will link the term
 	public abstract String decide(String term);
 	
-	//TODO return Set of all terms that we can link
+	// return Set of all terms that we can link
 	public Vector<String> findTerms(String cleanText){
-		//for each term in the cfd
-			//if exist in the text add getlink to the result
-		return null;
+		Vector<String> ans = new Vector<String>();
+		for(String term : _cfd.getAllTerms()){
+			if(cleanText.contains(term))
+				ans.add(term);
+		}
+		return ans;
 	}
 	
-	//TODO 
+	// for each term perform decide
 	public Map<String, String> buildDecisionsMap(Vector<String> terms){
-		//for each term perform decide
-		return null;
+		
+		HashMap<String , String> h = new HashMap<String, String>();
+		for(String term : terms){
+			h.put(term, _cfd.getMax(term));
+		}
+		return h;
 	}
 
 }
