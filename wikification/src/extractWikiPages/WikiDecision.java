@@ -35,4 +35,8 @@ public abstract class WikiDecision {
 		return h;
 	}
 
+	public WikiCfd getWikiCfd() {
+		return _cfd;
+	}
+
 }

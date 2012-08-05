@@ -4,21 +4,24 @@ import java.util.Vector;
 
 import de.tudarmstadt.ukp.wikipedia.api.Page;
 
+import extractWikiPages.Analyze;
 import extractWikiPages.Linguistic;
 import extractWikiPages.WikiCfd;
 import extractWikiPages.WikiData;
+import extractWikiPages.WikiDecisionBaseLine;
 
 
 public class App {
 
 	 public static void main(String[] args){
-		 WikiData wikiData = new WikiData(200, 35);
-//		 WikiCfd wikiCfd = new WikiCfd();
-//		 wikiCfd.training(wikiData.getArticles());
+		 int train = 500;
+		 int test = (int)(0.2*train);
+		 WikiData wikiData = new WikiData(200, 35,train);
+		 WikiCfd wikiCfd = new WikiCfd(wikiData);
+		 wikiCfd.training();
+		 WikiDecisionBaseLine wikidecision = new WikiDecisionBaseLine(wikiCfd); 
+		 Analyze analyze = new Analyze(wikidecision, test);
 		 
-		 Vector<Page> articles = wikiData.getArticles();
-		 for (Page p: articles)
-			 System.out.println(Linguistic.cleanText(p.getText()));
-		 System.out.println();
+		 System.out.println("Accuracy = "+analyze.getAccuracy());
 	 }
 }

@@ -15,15 +15,18 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 public class WikiCfd {
 	
 	private HashMap<String, HashMap<String, Integer>> _fd;
+	private WikiData _wikiData;
 
-	public WikiCfd() {
+	public WikiCfd(WikiData wikidata) {
 		this._fd = new HashMap<String, HashMap<String,Integer>>();
+		_wikiData = wikidata;
 	}
 	
 	/*
 	 * build the freqDist fd where key is term and values are links
 	 */
-	public void training(Vector<Page> articles){
+	public void training(){
+		Vector<Page> articles = _wikiData.getArticles();
 		for(Page p : articles){
 			MediaWikiParserFactory pf = new MediaWikiParserFactory();
 			pf.setTemplateParserClass( FlushTemplates.class );
@@ -86,6 +89,10 @@ public class WikiCfd {
 	
 	public Set<String> getAllTerms(){
 		return _fd.keySet();
+	}
+
+	public WikiData getWikiData() {
+		return _wikiData;
 	}
 
 }

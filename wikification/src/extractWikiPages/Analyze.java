@@ -4,7 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import de.tudarmstadt.ukp.wikipedia.api.Category;
+import de.tudarmstadt.ukp.wikipedia.api.DatabaseConfiguration;
 import de.tudarmstadt.ukp.wikipedia.api.Page;
+import de.tudarmstadt.ukp.wikipedia.api.Wikipedia;
+import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
+import de.tudarmstadt.ukp.wikipedia.api.exception.WikiApiException;
+import de.tudarmstadt.ukp.wikipedia.api.exception.WikiInitializationException;
 import de.tudarmstadt.ukp.wikipedia.parser.Link;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
@@ -15,21 +21,44 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 public class Analyze {
 
 	private WikiDecision _dec;
+	private final int TEST_PAGES_NUM;
+	private Vector<Page> _test;
 	
-	public Analyze(WikiDecision dec){
+	public Analyze(WikiDecision dec, int test_pages_num){
 		this._dec = dec;
+		TEST_PAGES_NUM = test_pages_num;
+		_test = new Vector<Page>();
+		generateTestDataSet();
 	}
 	
 	//TODO
-	public Vector<Page> generateTestDataSet(){
-		
-		return null;
+	private void generateTestDataSet(){
+		WikiData wikiData = _dec.getWikiCfd().getWikiData();
+		Page page;
+		try {
+			Category cat =  wikiData.getWikipedia().getCategory("יונקים");
+		} catch (WikiApiException e) {
+			e.printStackTrace();
+		}
+		Vector<Integer> trainIDs  = wikiData.getArticlesIDs();
+
+		Vector<Page> openlist = new Vector<Page>();
+		while(_test.size() < TEST_PAGES_NUM){
+			page = openlist.remove(0);
+			
+			if(openlist.size()<1000)
+					openlist.addAll(page.getOutlinks());
+			
+			if(!trainIDs.contains(page.getPageId()))
+				_test.add(page);
+		}
+
 	}
 	
-	public double getAccuracy(Vector<Page> test){
+	public double getAccuracy(){
 		int hits = 0;
 		int total = 0;
-		for(Page p: test){
+		for(Page p: _test){
 			String cleanText = Linguistic.cleanText(p.getText());
 			Vector<String> ourTerms = this._dec.findTerms(cleanText);
 			Map<String, String> realMap = buildRealMap(p);
@@ -70,4 +99,5 @@ public class Analyze {
 		}
 		return hits;
 	}
+	
 }

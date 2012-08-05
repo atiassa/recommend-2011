@@ -12,12 +12,16 @@ import de.tudarmstadt.ukp.wikipedia.api.exception.WikiInitializationException;
 
 public class WikiData {
 	
-	private final int ARTICLES_NUM = 500;
+	private final int ARTICLES_NUM ;
 	private Vector<Page> _articles;
+	private Wikipedia _wikipedia;
 	
-	public WikiData(int N_words , int M_outgoing_links){
+	public WikiData(int N_words , int M_outgoing_links, int train_pages_num){
 		_articles = new Vector<Page>();
+		ARTICLES_NUM = train_pages_num;
+
 		try {
+			_wikipedia = createWiki();
 			extractPages(N_words ,M_outgoing_links);
 		} catch (WikiApiException e) {
 			e.printStackTrace();
@@ -37,10 +41,9 @@ public class WikiData {
 	 * less than N words and those that have less than M outgoing links.
 	 */
 	private void extractPages(int n_words, int m_outgoing_links) throws WikiApiException {
-		Wikipedia wiki = createWiki();
 		System.out.println("Bulding wikipedia data with "+ARTICLES_NUM+" articles.");
 		Page page;
-		Category cat =  wiki.getCategory("יונקים");
+		Category cat =  _wikipedia.getCategory("יונקים");
 		Vector<Page> openlist = new Vector<Page>();
 		
 		openlist.addAll(cat.getArticles());
@@ -74,6 +77,18 @@ public class WikiData {
         // Create a new Hebrew wikipedia.
         Wikipedia wiki = new Wikipedia(dbConfig);
 		return wiki;
+	}
+	
+	public Vector<Integer> getArticlesIDs(){
+		Vector<Integer>	v = new Vector<Integer>();
+		for(Page p : _articles){
+			p.getPageId();
+		}
+		return v;
+	}
+
+	public Wikipedia getWikipedia() {
+		return _wikipedia;
 	}
 
 	
