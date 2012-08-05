@@ -81,7 +81,7 @@ public class Analyze {
 		    	h.put(link.getText(),t);
 		    }
 		}
-		return null;
+		return h;
 	}
 	
 	//return num of hits

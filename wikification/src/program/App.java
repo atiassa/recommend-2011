@@ -9,7 +9,7 @@ import extractWikiPages.WikiDecisionBaseLine;
 public class App {
 
 	 public static void main(String[] args){
-		 int train = 500;
+		 int train = 5000;
 		 int test = (int)(0.2*train);
 		 WikiData wikiData = new WikiData(200, 35,train);
 		 WikiCfd wikiCfd = new WikiCfd(wikiData);
