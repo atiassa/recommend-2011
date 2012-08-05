@@ -25,14 +25,10 @@ public class WikiCfd {
 	 */
 	public void training(Vector<Page> articles){
 		for(Page p : articles){
-			String text = p.getText();
-			
-			// get a ParsedPage object
 			MediaWikiParserFactory pf = new MediaWikiParserFactory();
 			pf.setTemplateParserClass( FlushTemplates.class );
-
 			MediaWikiParser parser = pf.createParser();
-			ParsedPage pp = parser.parse(text);
+			ParsedPage pp = parser.parse(p.getText());
 						    
 			//get the internal links of each section
 			for (Section section : pp.getSections()){
@@ -40,7 +36,6 @@ public class WikiCfd {
 			    	String t = link.getTarget();
 			    	t= t.replace("_", " ");
 			    	addToMap(link.getText(),t);
-			        //System.out.println("[" + link.getText()+" |"+t+"]");
 			    }
 			}
 		}
