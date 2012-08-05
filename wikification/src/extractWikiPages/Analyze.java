@@ -5,12 +5,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import de.tudarmstadt.ukp.wikipedia.api.Category;
-import de.tudarmstadt.ukp.wikipedia.api.DatabaseConfiguration;
 import de.tudarmstadt.ukp.wikipedia.api.Page;
-import de.tudarmstadt.ukp.wikipedia.api.Wikipedia;
-import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
 import de.tudarmstadt.ukp.wikipedia.api.exception.WikiApiException;
-import de.tudarmstadt.ukp.wikipedia.api.exception.WikiInitializationException;
 import de.tudarmstadt.ukp.wikipedia.parser.Link;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
@@ -28,21 +24,21 @@ public class Analyze {
 		this._dec = dec;
 		TEST_PAGES_NUM = test_pages_num;
 		_test = new Vector<Page>();
-		generateTestDataSet();
-	}
-	
-	//TODO
-	private void generateTestDataSet(){
-		WikiData wikiData = _dec.getWikiCfd().getWikiData();
-		Page page;
 		try {
-			Category cat =  wikiData.getWikipedia().getCategory("יונקים");
+			generateTestDataSet();
 		} catch (WikiApiException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void generateTestDataSet() throws WikiApiException{
+		WikiData wikiData = _dec.getWikiCfd().getWikiData();
+		Page page;
+		Category cat =  wikiData.getWikipedia().getCategory("יונקים");
 		Vector<Integer> trainIDs  = wikiData.getArticlesIDs();
 
 		Vector<Page> openlist = new Vector<Page>();
+		openlist.addAll(cat.getArticles());
 		while(_test.size() < TEST_PAGES_NUM){
 			page = openlist.remove(0);
 			
