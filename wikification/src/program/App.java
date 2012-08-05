@@ -1,11 +1,6 @@
 package program;
 
-import java.util.Vector;
-
-import de.tudarmstadt.ukp.wikipedia.api.Page;
-
 import extractWikiPages.Analyze;
-import extractWikiPages.Linguistic;
 import extractWikiPages.WikiCfd;
 import extractWikiPages.WikiData;
 import extractWikiPages.WikiDecisionBaseLine;
