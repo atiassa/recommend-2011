@@ -14,5 +14,6 @@ public class App {
 		 
 		 String text = "אבא הלך לכן וסיפר לי סיפור עם אמא, הסיפור מספר על אבא של כלב שברח לכלב ונבח עליו.";
 		 Linguistic.segmentationAndStemming(text);
+		 System.out.println();
 	 }
 }

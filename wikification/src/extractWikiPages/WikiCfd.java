@@ -1,6 +1,7 @@
 package extractWikiPages;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Vector;
 
 import de.tudarmstadt.ukp.wikipedia.api.Page;
@@ -86,6 +87,10 @@ public class WikiCfd {
 
 	public HashMap<String, HashMap<String, Integer>> getCfd() {
 		return _fd;
+	}
+	
+	public Set<String> getAllTerms(){
+		return _fd.keySet();
 	}
 
 }

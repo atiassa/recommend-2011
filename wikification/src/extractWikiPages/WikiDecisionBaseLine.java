@@ -7,9 +7,9 @@ public class WikiDecisionBaseLine extends WikiDecision {
 	}
 
 	@Override
-	public String getLink(String term) {
-		// TODO Auto-generated method stub
-		return null;
+	public String decide(String term) {
+		return _cfd.getMax(term);
 	}
+	
 
 }
