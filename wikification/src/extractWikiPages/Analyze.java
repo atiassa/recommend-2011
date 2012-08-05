@@ -28,15 +28,17 @@ public class Analyze {
 	
 	//TODO
 	public double getAccuracy(Vector<Page> test){
-		// go over each page in test
-			// clean the text
-			// find all terms
-			// build the hash with our decisions
-			// build hash with real decision
-			// sum = sum + compare the two hash
-			//sum the "mechane"
-		// calc accuracy for all
-		return 0;
+		int hits = 0;
+		int total = 0;
+		for(Page p: test){
+			String cleanText = Linguistic.cleanText(p.getText());
+			Vector<String> ourTerms = this._dec.findTerms(cleanText);
+			Map<String, String> realMap = buildRealMap(p);
+			Map<String, String> ourMap = this._dec.buildDecisionsMap(ourTerms);
+			hits = hits + this.compareTwoMaps(realMap, ourMap);
+			total = total + realMap.size();
+		}
+		return (double)hits/(double)total;
 	}
 	
 	//return the real map of <term ,link> from the Page
@@ -58,9 +60,15 @@ public class Analyze {
 		return null;
 	}
 	
-	//TODO return num of hits
+	//return num of hits
 	private int compareTwoMaps(Map<String, String> real, Map<String, String> our){
-		
-		return 0;
+		int hits = 0;
+		for(String term: our.keySet()){
+			String ourLink = our.get(term);
+			String realLink = real.get(term);
+			if(realLink != null && realLink.equals(ourLink))
+				hits++;
+		}
+		return hits;
 	}
 }
