@@ -501,13 +501,20 @@ def print_1(strm):
       print
 import codecs
 import sys
-if __name__ == '__main__':
-   #print_1(codecs.open(sys.argv[1], encoding="utf-8"))
-   #print_dict(codecs.open(sys.argv[1], encoding="utf-8"))
-   #print count
-   for line in codecs.open(sys.argv[1],encoding="utf-8"):
-      line = line.strip().split()
-      if not line: 
-         print
-         continue
-      print line[0].encode("utf-8"),tostring1(int(line[1]))
+
+def run(line):
+  line = line.strip().split()
+  if not line: 
+       return 
+  return line[0].encode("utf-8"),tostring1(int(line[1]))
+    
+#if __name__ == '__main__':
+#   #print_1(codecs.open(sys.argv[1], encoding="utf-8"))
+#   #print_dict(codecs.open(sys.argv[1], encoding="utf-8"))
+#   #print count
+#   for line in codecs.open(sys.argv[1],encoding="utf-8"):
+#      line = line.strip().split()
+#      if not line: 
+#         print
+#         continue
+#      print line[0].encode("utf-8"),tostring1(int(line[1]))
