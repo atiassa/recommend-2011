@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import extractWikiPages.Analyze;
+import extractWikiPages.Linguistic;
 import extractWikiPages.WikiCfd;
 import extractWikiPages.WikiData;
 import extractWikiPages.WikiDecisionBaseLine;
@@ -31,12 +32,14 @@ public class App {
 //		 
 //		 System.out.println("Accuracy = "+analyze.getAccuracy());
 		 
-		 HebTokenizer tok = new HebTokenizer();
-		 try {
-			System.out.println(tok.tokenize("[[שימי[[\n[[שימי[["));
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		 Linguistic.segmentation("", "", "", "");
+		 
+//		 HebTokenizer tok = new HebTokenizer();
+//		 try {
+//			System.out.println(tok.tokenize("[[שימי[[\n[[שימי[["));
+//		} catch (UnsupportedEncodingException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	 }
 }

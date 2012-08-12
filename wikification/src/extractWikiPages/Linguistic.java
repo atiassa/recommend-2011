@@ -68,20 +68,21 @@ public class Linguistic {
 	}
 	
 	//getting a fileName of the full article, the filename for the tokenized text,
-		//the filename of the segmented text and the file name of the analyzed (the output)
-		//and writing to the last file the analyzed text 
-		private static void segmentation(String fileName, String tokenizedFileName, String posFileName, String analyzeFileName){
-			//first phase - running the hebtokenizer.py - writing the result to the tokenize fileName
-			
-			//just for checking the jar
-			tokenizedFileName = "ben-gurion-tokenized.txt";
-			posFileName = "ben-gurion.pos";
-			
-			//second phase - running the tagger - writing the tagged text to the pos fileName
-			String[] args = {tokenizedFileName, posFileName, "-bWST"};
-			BasicTagger.main(args);
-			
-			//third phase - running the bitmasks_to_tags.py - writing the result to the Analyzed fileName
-			
-		}
+	//the filename of the segmented text and the file name of the analyzed (the output)
+	//and writing to the last file the analyzed text 
+	public static void segmentation(String fileName, String tokenizedFileName, String posFileName, String analyzeFileName){
+		//first phase - running the hebtokenizer.py - writing the result to the tokenize fileName
+		
+		//just for checking the jar
+		tokenizedFileName = "ben-gurion-tokenized.txt";
+		posFileName = "ben-gurion.pos";
+		
+		//second phase - running the tagger - writing the tagged text to the pos fileName
+		String[] args = {"tagger/",tokenizedFileName, posFileName};
+		BasicTagger.main(args);
+		
+		
+		//third phase - running the bitmasks_to_tags.py - writing the result to the Analyzed fileName
+		
+	}
 }
