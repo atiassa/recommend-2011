@@ -50,11 +50,11 @@ public class Tagger {
 		}
 	}
 	
-	public void tagString(String text){
-			
+	public String tagString(String text){
+		String ans = "";
 		try {
 			// For string -- to String
-			String ans = "";
+			
 			InputStream in = new ByteArrayInputStream(new String(text).getBytes("UTF-8"));
 			List<Sentence> taggedSentences = tagger.getTaggedSentences(in);
 			// print tagged sentence
@@ -65,6 +65,7 @@ public class Tagger {
 			e.printStackTrace();
 			System.exit(0);
 		}
+		return ans;
 	}
 	
 	public void tagFile(String inputFile, String outputFile){
