@@ -33,11 +33,9 @@ public class App {
 //		 
 //		 System.out.println("Accuracy = "+analyze.getAccuracy());
 		 
-		 Tagger t = new Tagger("tagger/");
+		 Tagger t = new Tagger();
 		 System.out.println("----------------Finished loading tagger data--------------");
-		 String tokenizedFileName = "ben-gurion-tokenized.txt";
-		 String posFileName = "ben-gurion.pos";
-		 t.tagFile(tokenizedFileName, posFileName);
+		 t.tagFile();
 		 
 //		 HebTokenizer tok = new HebTokenizer();
 //		 try {
