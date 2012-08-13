@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import extractWikiPages.Analyze;
 import extractWikiPages.Linguistic;
+import extractWikiPages.Tagger;
 import extractWikiPages.WikiCfd;
 import extractWikiPages.WikiData;
 import extractWikiPages.WikiDecisionBaseLine;
@@ -32,7 +33,11 @@ public class App {
 //		 
 //		 System.out.println("Accuracy = "+analyze.getAccuracy());
 		 
-		 Linguistic.segmentation("", "", "", "");
+		 Tagger t = new Tagger("tagger/");
+		 System.out.println("----------------Finished loading tagger data--------------");
+		 String tokenizedFileName = "ben-gurion-tokenized.txt";
+		 String posFileName = "ben-gurion.pos";
+		 t.tagFile(tokenizedFileName, posFileName);
 		 
 //		 HebTokenizer tok = new HebTokenizer();
 //		 try {
