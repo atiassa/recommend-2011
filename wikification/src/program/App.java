@@ -6,6 +6,7 @@ import org.python.core.PyInteger;
 import org.python.util.PythonInterpreter;
 
 import pyclass.HebTokenizer;
+import pyclass.Tagger;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 
 import extractWikiPages.Analyze;
 import extractWikiPages.Linguistic;
-import extractWikiPages.Tagger;
 import extractWikiPages.WikiCfd;
 import extractWikiPages.WikiData;
 import extractWikiPages.WikiDecisionBaseLine;
@@ -32,10 +32,10 @@ public class App {
 //		 Analyze analyze = new Analyze(wikidecision, test);
 //		 
 //		 System.out.println("Accuracy = "+analyze.getAccuracy());
-		 
-		 Tagger t = new Tagger();
-		 System.out.println("----------------Finished loading tagger data--------------");
-		 t.tagFile();
+		 Linguistic l = new Linguistic();
+		 String text = "TEMPLATE[מפנה, בן-גוריון]" ;
+		 l.segmentation(text);
+		
 		 
 //		 HebTokenizer tok = new HebTokenizer();
 //		 try {

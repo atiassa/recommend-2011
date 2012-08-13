@@ -1,4 +1,4 @@
-package extractWikiPages;
+package pyclass;
 
 import hebrewNER.NERTagger;
 
@@ -408,5 +408,17 @@ public class Tagger {
 		mFeaturesMask.put(17,Bitmask.PREFIX_FUNCTION_RELATIVIZER_SUBORDINATINGCONJUNCTION);
 		mFeaturesMask.put(18,Bitmask.PREFIX_FUNCTION_TEMPORALSUBCONJ);
 		mFeaturesMask.put(19,Bitmask.PREFIX_FUNCTION_ADVERB);
+	}
+	
+	public SimpleTagger3 getTagger(){
+		return tagger;
+	}
+
+	public NERTagger getnerTagger() {
+		return nerTagger;
+	}
+
+	public TaggerBasedHebrewChunker getchunker() {
+		return chunker;
 	}
 }

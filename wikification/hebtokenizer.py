@@ -110,23 +110,24 @@ def tokenize(sent):
    assert(not reminder)
    return parts
 
-#if __name__=='__main__':
-#   import sys
-#   from itertools import islice
-#
-#   from optparse import OptionParser
-#   parser = OptionParser("%prog [options] < in_file > out_file")
-#   parser.add_option("-i","--ie",help="input encoding [default %default]",dest="in_enc",default="utf_8_sig")
-#   parser.add_option("-o","--oe",help="output encoding [default %default]",dest="out_enc",default="utf_8")
-#   opts, args = parser.parse_args()
-#
-#   #FILTER = set(['JUNK','ENG'])
-def run_tokenize(text):
+def run_tokenize(In , Out):
+   
+   import sys
+   from itertools import islice
+
+   from optparse import OptionParser
+   sys.argv = ["hebtokenizer.py" ]
+   parser = OptionParser("%prog [options] < in_file > out_file")
+   parser.add_option("-i","--ie",help="input encoding [default %default]",dest="in_enc",default="utf_8_sig")
+   parser.add_option("-o","--oe",help="output encoding [default %default]",dest="out_enc",default="utf_8")
+   
+   opts, args = parser.parse_args()
+
+   sys.stdin = open(In,"r+")
+   sys.stdout = open(Out,"r+")
+   #FILTER = set(['JUNK','ENG'])
    FILTER = set()
-   s=""
-   #for sent in codecs.getreader(opts.in_enc)(sys.stdin):
+   for sent in codecs.getreader(opts.in_enc)(sys.stdin):
       #print u"\n".join(["%s %s" % (which,tok) for which,tok in tokenize(sent) if which not in FILTER]).encode("utf8")
-      #print u"\n".join(["%s %s" % (which,tok) for which,tok in tokenize(sent) if which not in FILTER]).encode("utf8")
-   s= " ".join([tok for (which,tok) in tokenize(text)]).encode("utf8")
-   return s 
+      print " ".join([tok for (which,tok) in tokenize(sent)]).encode(opts.out_enc)
 
