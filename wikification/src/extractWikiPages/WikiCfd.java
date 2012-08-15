@@ -38,7 +38,7 @@ public class WikiCfd {
 			    for (Link link : section.getLinks(Link.type.INTERNAL)) {
 			    	String t = link.getTarget();
 			    	t= t.replace("_", " ");
-			    	addToMap(link.getText(),t);
+			    	addToMap(Linguistic.cleanText(link.getText()),t);
 			    }
 			}
 		}

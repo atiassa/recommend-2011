@@ -1,5 +1,6 @@
 package extractWikiPages;
 import java.io.BufferedReader;
+
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -8,13 +9,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.List;
 import java.util.Vector;
+
+import com.sun.msv.datatype.xsd.LengthFacet;
 
 import pyclass.BitMask;
 import pyclass.HebTokenizer;
 import pyclass.Tagger;
 
 import vohmm.application.BasicTagger;
+import vohmm.corpus.Sentence;
 
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
@@ -23,35 +28,37 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 
 public class Linguistic {
 	
-	private Tagger tagger = null;
-	private BitMask bitResolver ;
+	private static Tagger tagger = null;
+	private static BitMask bitResolver ;
 	
 	public Linguistic(){
-		if (tagger==null)
-			tagger = new Tagger();
-		bitResolver = new BitMask();
+		
 	}
 	
 	public static String cleanText(String text){
+		if (tagger==null){
+			tagger = new Tagger();
+			bitResolver = new BitMask(tagger.getTagger());
+		}
 		// get a ParsedPage object
 		MediaWikiParserFactory pf = new MediaWikiParserFactory();
 		pf.setTemplateParserClass( FlushTemplates.class );
 
 		MediaWikiParser parser = pf.createParser();
 		ParsedPage pp = parser.parse(text);
-		return pp.getText();
+		return segmentationAndStemming(pp.getText());
 	}
 	
-	public static String segmentationAndStemming(String text){
+	private static  String segmentationAndStemming(String text){
 		//first we need to use the package to split the prefixes and suffixes.
-		//TODO
+		text  = segmentation(text);
 		
 		//remove all the stop words from the text - after the split.
-		text = Linguistic.removeStopWords(text);
+		text = removeStopWords(text);
 		return text;
 	}
 	
-	private static String removeStopWords(String text){
+	private static  String removeStopWords(String text){
 		Vector<String> stopWords = readStopWords();
 		String[] textWords = text.split("\t");
 		String res = "";
@@ -65,7 +72,7 @@ public class Linguistic {
 		return res;
 	}
 
-	private static Vector<String> readStopWords() {
+	private static  Vector<String> readStopWords() {
 		Vector<String> stopWords = new Vector<String>();
 		try {
 			FileReader fr = new FileReader("he-stopwords.txt");
@@ -88,7 +95,8 @@ public class Linguistic {
 	//getting a fileName of the full article, the filename for the tokenized text,
 	//the filename of the segmented text and the file name of the analyzed (the output)
 	//and writing to the last file the analyzed text 
-	public void segmentation(String text){
+	private static String segmentation(String text){
+		String res = "";
 		try {
 			Writer in1 = new BufferedWriter(new OutputStreamWriter(
 				    new FileOutputStream("in1.txt"), "UTF-8"));
@@ -101,13 +109,16 @@ public class Linguistic {
 			
 			//second phase - running the tagger - writing the tagged text to the pos fileName
 			tagger.tagFile();
+			List<Sentence> sentences = tagger.getSentences();
 			
 			//third phase - running the bitmasks_to_tags.py - writing the result to the Analyzed fileName
-			bitResolver.bitRelosve();
+			res  = bitResolver.bitRelosve(sentences);
 		
+			// return clean text after segmentation
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return res;
 	}
 	
 	

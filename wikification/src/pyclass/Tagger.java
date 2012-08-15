@@ -72,6 +72,7 @@ public class Tagger {
 	static TaggerBasedHebrewChunker chunker = null;
 	static NERTagger nerTagger=null;
 	static int iSent=0,iTok=0;
+	static List<Sentence> taggedSentences = null;
 	
 	public Tagger() {
 
@@ -272,7 +273,7 @@ public class Tagger {
 			while ((s = reader.readLine()) != null)
 				vohmm.util.Logger.logln(s);*/
 			
-			List<Sentence> taggedSentences = null;
+			
 			try {
 				taggedSentences = tagger.getTaggedSentences(in);
 			} catch (Exception e) {
@@ -302,13 +303,13 @@ public class Tagger {
 						chunker.addBIOLabels(sentence);
 								
 					iTok+=sentence.size();
-					if (outputData != Sentence.OutputData.NOAM)
-						out.println(sentence.toString(outputData,bLemma,bPN,bExt,bHasPN,nerTagger!=null,chunker!=null,bLemmaPrefix));
-					else {
-						out.println("<s>");
-						out.print(sentence.toString(outputData,bLemma,bPN,bExt,bHasPN,nerTagger!=null,chunker!=null));
-						out.println("</s>");
-					}
+//					if (outputData != Sentence.OutputData.NOAM)
+//						out.println(sentence.toString(outputData,bLemma,bPN,bExt,bHasPN,nerTagger!=null,chunker!=null,bLemmaPrefix));
+//					else {
+//						out.println("<s>");
+//						out.print(sentence.toString(outputData,bLemma,bPN,bExt,bHasPN,nerTagger!=null,chunker!=null));
+//						out.println("</s>");
+//					}
 				}
 				//tmp for rav-kook
 				tmpSent++;
@@ -420,5 +421,9 @@ public class Tagger {
 
 	public TaggerBasedHebrewChunker getchunker() {
 		return chunker;
+	}
+	
+	public List<Sentence> getSentences(){
+		return  taggedSentences;
 	}
 }

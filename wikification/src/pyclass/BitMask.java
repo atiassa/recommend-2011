@@ -1,67 +1,55 @@
 package pyclass;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.Writer;
 import java.util.List;
 
+import vohmm.application.SimpleTagger3;
 import vohmm.corpus.AffixInterface;
+import vohmm.corpus.Anal;
 import vohmm.corpus.AnalysisInterface;
 import vohmm.corpus.BitmaskResolver;
+import vohmm.corpus.Lemma;
+import vohmm.corpus.Sentence;
 import vohmm.corpus.Tag;
+import vohmm.corpus.Token;
+import vohmm.corpus.TokenExt;
 
 public class BitMask {
     
-	public BitMask() {
+	SimpleTagger3 tagger;
+	
+	public BitMask(SimpleTagger3 ta) {
+		tagger = ta;
     }
 
 	
-	public void bitRelosve() throws Exception{
-		String         line;
-		BufferedReader br = new BufferedReader(  new InputStreamReader(new FileInputStream(new File("out2.txt")), "UTF8"));
-		
-		while ((line = br.readLine()) != null) {
-				String[] l = line.split("\t");
-				if(l.length!=2)
-					continue;
-				Long bits = new Long(l[1]);
-				String word = l[0];
-				System.out.println(word);
-				
+	public String bitRelosve(List<Sentence> taggedSentences) throws Exception{
+		String text = "";
+		//PrintStream out = new PrintStream(new FileOutputStream("out2.txt"),true,"UTF-8");
+		for (Sentence sentence : taggedSentences) {
+			
+			// print tagged sentence by using AnalysisInterface, as follows:
+			for (TokenExt tokenExt : sentence.getTokens()) {
+				Token token = tokenExt._token;
+//				out.println(token.getOrigStr());
+				Anal anal =  token.getSelectedAnal();
+				Lemma lemma = anal.getLemma();
+	//			out.println("\tLemma: " + anal.getLemma());
+
 				// NOTE: In our tagger we consider participle of a 'verb' type as a present verb.
 				// In order to adapt it to MILA's schema the last parameter of BitmaskResolver constructor should be 'false' (no present verb)
-				AnalysisInterface bitmaskResolver = new BitmaskResolver(bits,word,false);
-				System.out.println("\tPOS: " + bitmaskResolver.getPOS());
-				System.out.println("\tPOS type: " + bitmaskResolver.getPOSType()); // the type of participle is "noun/adjective" or "verb"
-				System.out.println("\tGender: " + bitmaskResolver.getGender());
-				System.out.println("\tNumber: " + bitmaskResolver.getNumber());
-				System.out.println("\tPerson: " + bitmaskResolver.getPerson());
-				System.out.println("\tStatus: " + bitmaskResolver.getStatus());
-				System.out.println("\tTense: " + bitmaskResolver.getTense());
-				System.out.println("\tPolarity: " + bitmaskResolver.getPolarity());
-				System.out.println("\tDefiniteness: " + bitmaskResolver.isDefinite());
-				if (bitmaskResolver.hasPrefix()) {
-					System.out.print("\tPrefixes: ");
-					List<AffixInterface> prefixes = bitmaskResolver.getPrefixes();
-					if (prefixes != null) {
-						for (AffixInterface prefix : prefixes)
-							System.out.print(prefix.getStr() + " " + Tag.toString(prefix.getBitmask(),true) + " ");
-					}
-					System.out.print("\n");
-				} else
-					System.out.println("\tPrefixes: None");
-				if (bitmaskResolver.hasSuffix()) {
-					System.out.println("\tSuffix Function: " + bitmaskResolver.getSuffixFunction());
-					System.out.println("\tSuffix Gender: " + bitmaskResolver.getSuffixGender());
-					System.out.println("\tSuffix Number: " + bitmaskResolver.getSuffixNumber());
-					System.out.println("\tSuffix Person: " + bitmaskResolver.getSuffixPerson());
-				} else 
-					System.out.println("\tSuffix: None");		
+				//AnalysisInterface bitmaskResolver = new BitmaskResolver(anal.getTag().getBitmask(),token.getOrigStr(),false);
+				
+				
+				text = text + lemma.getStr().replace("^"," ") + " ";
 			}
-		br.close();
+		}
+		return text;
+		
 	}
 	
 }
