@@ -30,6 +30,7 @@ public class Linguistic {
 	
 	private static Tagger tagger = null;
 	private static BitMask bitResolver ;
+	private static HebTokenizer tokenizer ;
 	
 	public Linguistic(){
 		
@@ -39,6 +40,7 @@ public class Linguistic {
 		if (tagger==null){
 			tagger = new Tagger();
 			bitResolver = new BitMask(tagger.getTagger());
+			tokenizer = new HebTokenizer();
 		}
 		return segmentationAndStemming(text);
 	}
@@ -98,7 +100,7 @@ public class Linguistic {
 			in1.close();
 		
 			//first phase - running the hebtokenizer.py - writing the result to the tokenize fileName
-			HebTokenizer tokenizer = new HebTokenizer();
+			
 			tokenizer.tokenize();
 			
 			//second phase - running the tagger - writing the tagged text to the pos fileName
