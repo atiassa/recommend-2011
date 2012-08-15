@@ -40,13 +40,7 @@ public class Linguistic {
 			tagger = new Tagger();
 			bitResolver = new BitMask(tagger.getTagger());
 		}
-		// get a ParsedPage object
-		MediaWikiParserFactory pf = new MediaWikiParserFactory();
-		pf.setTemplateParserClass( FlushTemplates.class );
-
-		MediaWikiParser parser = pf.createParser();
-		ParsedPage pp = parser.parse(text);
-		return segmentationAndStemming(pp.getText());
+		return segmentationAndStemming(text);
 	}
 	
 	private static  String segmentationAndStemming(String text){

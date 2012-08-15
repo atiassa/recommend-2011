@@ -54,8 +54,13 @@ public class Analyze {
 	public double getAccuracy(){
 		int hits = 0;
 		int total = 0;
+		// get a ParsedPage object
+		MediaWikiParserFactory pf = new MediaWikiParserFactory();
+		pf.setTemplateParserClass( FlushTemplates.class );
+		MediaWikiParser parser = pf.createParser();
 		for(Page p: _test){
-			String cleanText = Linguistic.cleanText(p.getText());
+			ParsedPage pp = parser.parse(p.getText());
+			String cleanText = Linguistic.cleanText(pp.getText());
 			Vector<String> ourTerms = this._dec.findTerms(cleanText);
 			Map<String, String> realMap = buildRealMap(p);
 			Map<String, String> ourMap = this._dec.buildDecisionsMap(ourTerms);
