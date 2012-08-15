@@ -83,7 +83,7 @@ public class Analyze {
 		    for (Link link : section.getLinks(Link.type.INTERNAL)) {
 		    	String t = link.getTarget();
 		    	t= t.replace("_", " ");
-		    	h.put(link.getText(),t);
+		    	h.put(Linguistic.cleanText(link.getText()),t);
 		    }
 		}
 		return h;

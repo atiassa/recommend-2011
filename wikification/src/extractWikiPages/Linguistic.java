@@ -47,7 +47,7 @@ public class Linguistic {
 	
 	private static  String segmentationAndStemming(String text){
 		//first we need to use the package to split the prefixes and suffixes.
-		text  = segmentation(text);
+		//text  = segmentation(text);
 		
 		//remove all the stop words from the text - after the split.
 		text = removeStopWords(text);
@@ -100,7 +100,6 @@ public class Linguistic {
 			in1.close();
 		
 			//first phase - running the hebtokenizer.py - writing the result to the tokenize fileName
-			
 			tokenizer.tokenize();
 			
 			//second phase - running the tagger - writing the tagged text to the pos fileName

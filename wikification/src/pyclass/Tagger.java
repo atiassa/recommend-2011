@@ -144,7 +144,7 @@ public class Tagger {
 	public void tagFile(){
 		try {
 			tag("out1.txt","out2.txt");
-			System.out.println(iTok + " tokens, " + iSent + " sentences");
+		//	System.out.println(iTok + " tokens, " + iSent + " sentences");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -198,7 +198,7 @@ public class Tagger {
 		} else { // file to be taggged
 			if (bAllFiles || infile.getName().endsWith(".txt")) {
 				//debug
-				System.out.println(infile.getAbsolutePath());				
+				//System.out.println(infile.getAbsolutePath());				
 				InputStream in = new FileInputStream(infile); 
 				if (linebyline) {
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in,in_linebyline_encoding));
@@ -219,7 +219,7 @@ public class Tagger {
 		if (infile.isDirectory()) {
 			// create correspond directory for xml
 			String out = outdir + infile.getAbsolutePath().substring(pos);
-			System.out.println(out);
+			//System.out.println(out);
             if (!(new File(out)).exists()) {
             	if ((new File(out)).mkdir())
             		System.out.println("Success creating directory: " + out);
@@ -235,7 +235,7 @@ public class Tagger {
 		} else { // file to be taggged
 			if (bAllFiles || infile.getName().endsWith(".txt")) {
 				//debug
-				System.out.println(infile.getAbsolutePath());
+				//System.out.println(infile.getAbsolutePath());
 				InputStream in = new FileInputStream(infile);	
 				if (linebyline) {
 					PrintStream outstream = new PrintStream(new FileOutputStream(outdir + infile.getAbsolutePath().substring(pos)),false,outencoding);

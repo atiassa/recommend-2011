@@ -124,10 +124,12 @@ def run_tokenize(In , Out):
    opts, args = parser.parse_args()
 
    sys.stdin = open(In,"r+")
-   sys.stdout = open(Out,"r+")
+   sys.stdout = open(Out,"w")
    #FILTER = set(['JUNK','ENG'])
    FILTER = set()
    for sent in codecs.getreader(opts.in_enc)(sys.stdin):
       #print u"\n".join(["%s %s" % (which,tok) for which,tok in tokenize(sent) if which not in FILTER]).encode("utf8")
       print " ".join([tok for (which,tok) in tokenize(sent)]).encode(opts.out_enc)
+   sys.stdin.close()
+   sys.stdout.close()
 
