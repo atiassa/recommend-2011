@@ -27,8 +27,8 @@ public class Linguistic {
 	private BitMask bitResolver ;
 	
 	public Linguistic(){
-//		if (tagger==null)
-//			tagger = new Tagger();
+		if (tagger==null)
+			tagger = new Tagger();
 		bitResolver = new BitMask();
 	}
 	
@@ -90,17 +90,17 @@ public class Linguistic {
 	//and writing to the last file the analyzed text 
 	public void segmentation(String text){
 		try {
-//			Writer in1 = new BufferedWriter(new OutputStreamWriter(
-//				    new FileOutputStream("in1.txt"), "UTF-8"));
-//			in1.write(text);
-//			in1.close();
-//		
-//			//first phase - running the hebtokenizer.py - writing the result to the tokenize fileName
-//			HebTokenizer tokenizer = new HebTokenizer();
-//			tokenizer.tokenize();
-//			
-//			//second phase - running the tagger - writing the tagged text to the pos fileName
-//			tagger.tagFile();
+			Writer in1 = new BufferedWriter(new OutputStreamWriter(
+				    new FileOutputStream("in1.txt"), "UTF-8"));
+			in1.write(text);
+			in1.close();
+		
+			//first phase - running the hebtokenizer.py - writing the result to the tokenize fileName
+			HebTokenizer tokenizer = new HebTokenizer();
+			tokenizer.tokenize();
+			
+			//second phase - running the tagger - writing the tagged text to the pos fileName
+			tagger.tagFile();
 			
 			//third phase - running the bitmasks_to_tags.py - writing the result to the Analyzed fileName
 			bitResolver.bitRelosve();
