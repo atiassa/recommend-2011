@@ -35,17 +35,14 @@ public class BitMask {
 			// print tagged sentence by using AnalysisInterface, as follows:
 			for (TokenExt tokenExt : sentence.getTokens()) {
 				Token token = tokenExt._token;
-//				out.println(token.getOrigStr());
 				Anal anal =  token.getSelectedAnal();
 				Lemma lemma = anal.getLemma();
-	//			out.println("\tLemma: " + anal.getLemma());
 
 				// NOTE: In our tagger we consider participle of a 'verb' type as a present verb.
 				// In order to adapt it to MILA's schema the last parameter of BitmaskResolver constructor should be 'false' (no present verb)
 				//AnalysisInterface bitmaskResolver = new BitmaskResolver(anal.getTag().getBitmask(),token.getOrigStr(),false);
 				
-				
-				text = text + lemma.getStr().replace("^"," ") + " ";
+				text = text + lemma.getStr().replace("^"," ") +" ";
 			}
 		}
 		return text;

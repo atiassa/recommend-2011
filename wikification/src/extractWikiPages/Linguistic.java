@@ -2,11 +2,13 @@ package extractWikiPages;
 import java.io.BufferedReader;
 
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
@@ -31,6 +33,7 @@ public class Linguistic {
 	private static Tagger tagger = null;
 	private static BitMask bitResolver ;
 	private static HebTokenizer tokenizer ;
+	private static Vector<String> stopWords = null;
 	
 	public Linguistic(){
 		
@@ -47,7 +50,7 @@ public class Linguistic {
 	
 	private static  String segmentationAndStemming(String text){
 		//first we need to use the package to split the prefixes and suffixes.
-		//text  = segmentation(text);
+		text  = segmentation(text);
 		
 		//remove all the stop words from the text - after the split.
 		text = removeStopWords(text);
@@ -55,8 +58,9 @@ public class Linguistic {
 	}
 	
 	private static  String removeStopWords(String text){
-		Vector<String> stopWords = readStopWords();
-		String[] textWords = text.split("\t");
+		if (stopWords == null)
+			stopWords = readStopWords();
+		String[] textWords = text.split("\\s+");
 		String res = "";
 		for (int i=0; i<textWords.length; i++){
 			if (!stopWords.contains(textWords[i])){
@@ -71,8 +75,7 @@ public class Linguistic {
 	private static  Vector<String> readStopWords() {
 		Vector<String> stopWords = new Vector<String>();
 		try {
-			FileReader fr = new FileReader("he-stopwords.txt");
-			BufferedReader br = new BufferedReader(fr);
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("he-stopwords.txt"),"UTF-8"));
 			String s = br.readLine();
 			while (s != null){
 				stopWords.add(s);
