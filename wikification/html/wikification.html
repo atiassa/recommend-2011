@@ -53,7 +53,21 @@ and performing the decision process above for all terms in the page, the decisio
 process gives us a map of term-link of our decisions.<br>
 Then we compare the 2 maps and count the no. of hits in and sums it up for all articles.<br>
 The accuracy is calculated and returned - Accuracy = no. of hits/no. of links in all articles.<br>
- 
+<li>The cleaning process:<br>
+First we are taking only the real text without all wikepdia annotations (using JWPL library).<br>
+Then we are performing morphological analysis in Hebrew, that means to run the 
+hebtokenizer python program, and then run Meni's thesis on the result that tagged 
+each word in the article and helped us to split and stem phrases in hebrew.<br>
+After tagging we have for each word a Lemma property that help us doing the split.<br>
+After all that we removing all the words in the text that equal to one of the words in the he-stopwords.txt file.<br>
+<br>
+
+<h2> Conclusion:</h2>
+We noticed that if the cleaning process not include the 
+segmentation and stemming process and only include the remove stop words process, 
+the accuracy of the decision is lower then the accuracy of the above process.<br>
+The accuracy without segmentation&stemming process is 0.5 for 5000 articles in the train.<br>
+The accuracy of the above process is ______ for 5000 articles in the train.<br>
 <br>
 
 <h2>Third party Packages</h2>
