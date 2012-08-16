@@ -39,11 +39,21 @@ the train will not appear in the test.
 <br>
 
 <h2>Forth Phase - Decision process</h2>
-
+After we build the cfd (for each term we have the list of links 
+associated to this term in all articles in the training set, 
+and for each link and term we have the no. of times the link was associated to this term).<br>
+We implemented the BaseLine decision process that means to take the most frequent link 
+which was associated to the term wanted.
 <br>
 
 <h2>Fifth Phase - Accuracy calculations</h2>
-
+After building the test data, for each article in the test data set we build a real map each
+link we find in the page (map of term-link) then we clean the text of the article, 
+and performing the decision process above for all terms in the page, the decision 
+process gives us a map of term-link of our decisions.<br>
+Then we compare the 2 maps and count the no. of hits in and sums it up for all articles.<br>
+The accuracy is calculated and returned - Accuracy = no. of hits/no. of links in all articles.<br>
+ 
 <br>
 
 <h2>Third party Packages</h2>

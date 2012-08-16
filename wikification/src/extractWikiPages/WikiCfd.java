@@ -42,6 +42,7 @@ public class WikiCfd {
 			    }
 			}
 		}
+		System.out.println("--------Traning Done!----------");
 	}
 
 	/*

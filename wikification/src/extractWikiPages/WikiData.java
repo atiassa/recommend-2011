@@ -41,7 +41,7 @@ public class WikiData {
 	 * less than N words and those that have less than M outgoing links.
 	 */
 	private void extractPages(int n_words, int m_outgoing_links) throws WikiApiException {
-		System.out.println("Bulding wikipedia data with "+ARTICLES_NUM+" articles.");
+		System.out.println("Bulding wikipedia Train DataSet with "+ARTICLES_NUM+" articles.");
 		Page page;
 		Category cat =  _wikipedia.getCategory("יונקים");
 		Vector<Page> openlist = new Vector<Page>();

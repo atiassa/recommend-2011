@@ -23,12 +23,11 @@ import extractWikiPages.WikiDecisionBaseLine;
 public class App {
 
 	 public static void main(String[] args){
-		 int train = 10;
+		 int train = 5000;
 		 int test = (int)(0.2*train);
 		 WikiData wikiData = new WikiData(200, 35,train);
 		 WikiCfd wikiCfd = new WikiCfd(wikiData);
 		 wikiCfd.training();
-		 System.out.println("Traning done!");
 		 WikiDecisionBaseLine wikidecision = new WikiDecisionBaseLine(wikiCfd); 
 		 Analyze analyze = new Analyze(wikidecision, test);
 		 

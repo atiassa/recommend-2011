@@ -32,6 +32,7 @@ public class Analyze {
 	}
 	
 	private void generateTestDataSet() throws WikiApiException{
+		System.out.println("--------Start generating Test DataSet---------");
 		WikiData wikiData = _dec.getWikiCfd().getWikiData();
 		Page page;
 		Category cat =  wikiData.getWikipedia().getCategory("יונקים");
@@ -48,10 +49,12 @@ public class Analyze {
 			if(!trainIDs.contains(page.getPageId()))
 				_test.add(page);
 		}
+		System.out.println("--------Done generating Test DataSet---------");
 
 	}
 	
 	public double getAccuracy(){
+		System.out.println("--------Start Decision process & Accuracy calculation---------");
 		int hits = 0;
 		int total = 0;
 		// get a ParsedPage object
