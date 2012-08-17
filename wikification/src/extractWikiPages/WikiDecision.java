@@ -30,7 +30,7 @@ public abstract class WikiDecision {
 		
 		HashMap<String , String> h = new HashMap<String, String>();
 		for(String term : terms){
-			h.put(term, _cfd.getMax(term));
+			h.put(term, decide(term));
 		}
 		return h;
 	}
