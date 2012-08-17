@@ -9,6 +9,7 @@ import extractWikiPages.WikiDecisionBaseLine;
 public class App {
 
 	 public static void main(String[] args){
+		 long start = System.currentTimeMillis();
 		 int train = 500;
 		 int test = (int)(0.2*train);
 		 WikiData wikiData = new WikiData(200, 35,train);
@@ -16,6 +17,7 @@ public class App {
 		 wikiCfd.training();
 		 WikiDecisionBaseLine wikidecision = new WikiDecisionBaseLine(wikiCfd); 
 		 Analyze analyze = new Analyze(wikidecision, test);
-		 System.out.println("Accuracy = "+analyze.getAccuracy());	 
+		 System.out.println("Accuracy = "+analyze.getAccuracy());
+		 System.out.println("time of the program - " + (System.currentTimeMillis() - start));
 	 }
 }
