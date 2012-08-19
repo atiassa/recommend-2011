@@ -65,9 +65,11 @@ After all that we removing all the words in the text that equal to one of the wo
 <h2> Conclusion:</h2>
 We noticed that if the cleaning process not include the 
 segmentation and stemming process and only include the remove stop words process, 
-the accuracy of the decision is lower then the accuracy of the above process.<br>
-The accuracy without segmentation&stemming process is 0.5 for 5000 articles in the train.<br>
-The accuracy of the above process is ______ for 5000 articles in the train.<br>
+the accuracy of the decision is similar to the accuracy of the above process.<br>
+The accuracy without segmentation&stemming&remove stop words process is 0.59 for 5000 articles in the train.<br>
+The accuracy of the above process is 0.63 for 5000 articles in the train.<br>
+At first we anticipated that we will have differences - with the segmentation & stemming 
+the accuracy will be higher - but the calculations shows us that the accuracy is similar.<br> 
 <br>
 
 <h2>Third party Packages</h2>
@@ -77,16 +79,60 @@ The accuracy of the above process is ______ for 5000 articles in the train.<br>
 
 <h2>Running Examples:</h2>
 <br>
-Running on 5000 articles in the train and 1000 in the test:<br>
+Running on 5000 articles in the train and 1000 in the test (With segmentation&stemming&remove stop words):<br>
 <pre>
-
+Bulding wikipedia Train DataSet with 5000 articles.
+  get so far : 10
+  get so far : 20
+  .
+  .
+  .
+  get so far : 5000
+[]
+TAGGED
+Reading corpus data from file...
+Finish loading compact data from file
+Start reading first similar words map from file
+Finish successfully first similar words map initializtion from file
+Start reading compact trigram prob model from file...
+Finish reading compact trigram prob model from file
+Loading PN model
+pnmodel = tagger/splt
+window size:5
+max type:18
+min location:-2
+Done Loading PN model
+Start reading BGU lexicon...
+Finish reading BGU lexicon
+--------Traning Done!----------
+--------Start generating Test DataSet---------
+--------Done generating Test DataSet---------
+--------Start Decision process & Accuracy calculation---------
+Accuracy = 0.6317345451427591
 </pre>
 <br>
-Running on 500 articles in the train and 100 articles in the test:<br>
-<pre>
-
-</pre>  
-
+<h2>Classes Explenations:</h2>
+<li>WikiData - has the list of articles we gather from the wikipedia dump.<br>
+<li>WikiCfd - has the cfd (term,link,no. of times the link is associated to this term).<br>
+The function training is building the cfd according to the X articles we have in the WikiData.<br>
+<li>WikiDecision - abstract class that responsible on the decision process of matching a link to a term.<br>
+One abstract function decide that recieves a term and should return a string of the matching link.<br>
+findTerms function that recieves clean text and return a list of terms that exists in the text.<br>
+buildDecisionMap function that recieve a list of terms and match for each term the right link with the help of decide function and return a map of term-link.<br>
+<li>WikiDecisionBaseLine - inherit the WikiDecision class and implement the function decide according to the base line.<br>
+The base line is to take the link that have the maximal no. in the cfd for the term - means to take the most frequent link of the term we recieve.<br>
+<li>Linguistic - static class that responsible of cleaning the text.<br>
+Holds the tagger, hebTokenizer, BitResolver.<br>
+The only public function is cleanText that gets the text without wiki notations and perform the Segmentation & stemming and 
+remove stop words process with the help of the hebtokenizer, tagger and bitResolver.<br>
+<li>Tagger - Meni's thesis, we copied the basic tagger class and change there a few things so we will be able to get the list of tagged sentences after tagging 
+because we need to use the lemma property to do the segmentation.<br>
+we added a function to get the tagged sentences after tagging.<br>
+<li>HebTokenizer - class for runninf the python code hebtokenizer.py<br>
+<li>BitMask - responsible of performing the segmentation itself.<br>
+The function bitResolve gets the tagged sentences list and performing the segmentation with the help of the lemma property.
+<li>Analyze - Responsible of testing the Decision process. It builds the test data set and calculate the Accuracy of the decision process.
+<li>App - This is the main function.
 </BODY>
 
 

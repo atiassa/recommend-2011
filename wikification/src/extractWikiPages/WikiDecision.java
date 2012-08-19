@@ -25,7 +25,7 @@ public abstract class WikiDecision {
 		return ans;
 	}
 	
-	// for each term perform decide
+	// for each term perform decide and return a map of <term,link> that our decision process has made
 	public Map<String, String> buildDecisionsMap(Vector<String> terms){
 		
 		HashMap<String , String> h = new HashMap<String, String>();

@@ -23,7 +23,7 @@ public class WikiCfd {
 	}
 	
 	/*
-	 * build the freqDist fd where key is term and values are links
+	 * build the cfd where key is term and values are hash map of <link, no. of times the link appeared to this term>
 	 */
 	public void training(){
 		Vector<Page> articles = _wikiData.getArticles();
@@ -46,7 +46,7 @@ public class WikiCfd {
 	}
 
 	/*
-	 * add increase link value in tne term key by 1
+	 * add increase link value in the term key by 1
 	 * create new one if it not exists in hash
 	 */
 	private void addToMap(String term, String link) {

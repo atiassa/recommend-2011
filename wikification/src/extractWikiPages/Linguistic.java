@@ -97,8 +97,7 @@ public class Linguistic {
 	private static String segmentation(String text){
 		String res = "";
 		try {
-			Writer in1 = new BufferedWriter(new OutputStreamWriter(
-				    new FileOutputStream("in1.txt"), "UTF-8"));
+			Writer in1 = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("in1.txt"), "UTF-8"));
 			in1.write(text);
 			in1.close();
 		
